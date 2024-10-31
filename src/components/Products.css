@@ -1,0 +1,137 @@
+Contenedor de productos
+.productos-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: auto;
+    
+}
+
+.productos-content {
+    padding: 20px;
+    width: 100%; 
+    transition: margin-left 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+    
+}
+
+.productos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.productos-table th, .productos-table td {
+    padding: 10px;
+    border: 10px solid #ddd;
+    text-align: left;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.categoria-select, .search-input {
+    padding: 5px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.add-product-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.edit-button, .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.delete-button {
+    color: red;
+}
+
+.edit-button {
+    color: #007bff;
+}
+
+/* Estilos Responsivos */
+@media (max-width: 1024px) {
+    .productos-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .productos-content {
+        padding: 10px;
+    }
+
+    .categoria-select, .search-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .add-product-button {
+        width: 100%;
+        padding: 15px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .productos-content {
+        padding: 10px;
+    }
+
+    .header h2 {
+        font-size: 18px;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .add-product-button {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .productos-table th, .productos-table td {
+        font-size: 14px;
+        padding: 8px;
+    }
+}

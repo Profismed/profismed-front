@@ -1,38 +1,63 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Estilos para el contenedor principal */
+.app-container {
   display: flex;
+  height: 100vh;
   flex-direction: column;
+}
+
+/* Asegúrate de que el banner esté fijo en la parte superior */
+.banner {
+  background-color: #1E90FF;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 0 20px;
+  position: fixed; /* Fijo en la parte superior */
+  top: 0;
+  left: 0;
+  width: 100%; /* Que abarque toda la pantalla */
+  z-index: 1000; /* Para asegurarse de que esté por encima de otros elementos */
 }
 
-.App-link {
-  color: #61dafb;
+/* Ajuste para el sidebar */
+.sidebar {
+  width: 250px; /* Ancho del sidebar */
+  position: fixed; /* Fijo en la parte izquierda */
+  top: 60px; /* Debajo del banner */
+  left: 0;
+  height: calc(100vh - 60px); /* Ocupa toda la altura restante debajo del banner */
+  background-color: #2C3E50;
+  z-index: 500; /* Menor que el banner */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Estilos para el contenido principal */
+.content {
+  margin-top: 60px; /* Deja espacio para el banner */
+  margin-left: 250px; /* Deja espacio para el sidebar */
+  padding: 20px;
+  width: calc(100% - 250px); /* Resta el ancho del sidebar */
+  height: calc(100vh - 60px); /* Resta la altura del banner */
+  overflow-y: auto; /* Para que sea desplazable si es necesario */
+}
+
+/* Hacer que el contenido sea responsivo */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px; /* Sidebar más pequeño en pantallas pequeñas */
   }
-  to {
-    transform: rotate(360deg);
+  .content {
+    margin-left: 200px; /* Ajustar margen izquierdo según el nuevo ancho del sidebar */
+    width: calc(100% - 200px);
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    display: none; /* Esconde el sidebar en pantallas muy pequeñas */
+  }
+  .content {
+    margin-left: 0;
+    width: 100%; /* El contenido ocupa toda la pantalla */
   }
 }

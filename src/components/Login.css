@@ -1,0 +1,156 @@
+/* Estilos globales solo para el login */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Ocupar toda la altura de la pantalla */
+  background-color: #f4f4f9;
+}
+
+/* Contenedor principal del login */
+.login-page .login-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+/* Estilos para la imagen del logo */
+.logo-container {
+  margin-bottom: 20px;
+}
+
+.logo-image {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Estilos para las pestañas de iniciar sesión y registrarse */
+.tabs {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 10px 20px;
+  color: #007bff;
+  transition: color 0.3s, border-bottom 0.3s;
+}
+
+.active-tab {
+  border-bottom: 2px solid #007bff;
+  color: #007bff;
+}
+
+/* Estilos para los formularios de login y registro */
+.login-form, .register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+input, select {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+
+/* Botones de login y registro */
+button.login-button, button.register-button {
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 10px;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+}
+
+button.login-button:hover, button.register-button:hover {
+  background-color: #0056b3;
+}
+
+/* Botones de redes sociales */
+.social-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button.google, button.facebook, button.apple {
+  width: 30%;
+  padding: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #f4f4f9;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  transition: background-color 0.3s;
+}
+
+button.google:hover {
+  background-color: #f7f7f7;
+}
+
+button.facebook:hover {
+  background-color: #eef1ff;
+}
+
+button.apple:hover {
+  background-color: #e5e5e5;
+}
+
+/* Mensaje de error */
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+}
+
+/* Estilos para el enlace de "¿Olvidaste tu contraseña?" */
+.forgot-password {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.forgot-password a {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* Texto de alternativas de inicio de sesión */
+.login-alternatives p {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* Estilo del título dentro del contenedor de login */
+.login-container h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
