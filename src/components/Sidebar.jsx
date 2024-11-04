@@ -5,19 +5,20 @@ import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, Hi
 
 const SidebarComponent = () => {
   return (
-    <Sidebar aria-label="Default sidebar example">
-      <Sidebar.Items>
-        <Sidebar.ItemGroup>
-          <Sidebar.Item as={Link} to="/LandingPage" icon={HiUser}>
+    
+    <Sidebar  className='bg-[#31e750] '>
+      <Sidebar.Items className='bg-[#eb5834] '>
+        <Sidebar.ItemGroup className='bg-[#811f64] '>
+          <Sidebar.Item className=' text-slate-200 bg-[#25282c]' as={Link} to="/LandingPage" icon={HiUser}>
             Personas
           </Sidebar.Item>
-          <Sidebar.Item as={Link} to="/products" icon={HiShoppingBag}>
+          <Sidebar.Item className=' text-slate-200' as={Link} to="/products" icon={HiShoppingBag}>
             Productos
           </Sidebar.Item>
-          <Sidebar.Item as={Link} to="/Reports" icon={HiChartPie}>
+          <Sidebar.Item className=' text-slate-200' as={Link} to="/Reports" icon={HiChartPie}>
             Reportes
           </Sidebar.Item>
-          <Sidebar.Item as={Link} to="/logout" icon={HiArrowSmRight}>
+          <Sidebar.Item className=' text-slate-200' as={Link} to="/logout" icon={HiArrowSmRight}>
             Cerrar sesión
           </Sidebar.Item>
         </Sidebar.ItemGroup>

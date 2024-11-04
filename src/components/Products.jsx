@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import './Products.css'; // Asegúrate de tener un archivo CSS para estilos
 
 const Products = () => {
-  // Datos iniciales de ejemplo
   const [productos, setProductos] = useState([
     { id: 'G3241', nombre: 'Gas Spring', descripcion: 'T70-432/120N Bansb', cantidad: 3, categoria: 'Gas Spring', precio: '$989.287' },
     { id: 'C6472', nombre: 'Bisagra plas', descripcion: 'Atornillable de 65 nr', cantidad: 10, categoria: 'Conveyors', precio: '$51.408' },
@@ -12,70 +10,55 @@ const Products = () => {
     { id: 'C8919', nombre: 'Clam tipo pi', descripcion: 'Capacidad de retención', cantidad: 0, categoria: 'Clamps precisión', precio: '$229.238' },
   ]);
 
-  // Función para eliminar un producto
   const eliminarProducto = (id) => {
     setProductos(productos.filter(producto => producto.id !== id));
   };
 
   return (
-    <div className="productos-container">
-      {/* Barra lateral
-      <nav className="sidebar">
-        <ul>
-          <li><span className="icon">👤</span> Personas</li>
-          <li className="active"><span className="icon">🛒</span> Products</li>
-          <li><span className="icon">📊</span> Reportes</li>
-        </ul>
-      </nav> */}
-
-      {/* Contenido principal */}
-      <div className="productos-content">
-        <div className="header">
-          <h2>Admin</h2>
-        </div>
-        <div className="table-container">
-          <div className="table-header">
-            <select className="categoria-select">
-              <option value="">Categoría</option>
-              <option value="Gas Spring">Gas Spring</option>
-              <option value="Conveyors">Conveyors</option>
-              {/* Otras opciones */}
-            </select>
-            <input type="text" placeholder="Buscar" className="search-input" />
-          </div>
-
-          <table className="productos-table">
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productos.map((producto) => (
-                <tr key={producto.id}>
-                  <td>{producto.id}</td>
-                  <td>{producto.nombre}</td>
-                  <td>{producto.descripcion}</td>
-                  <td>{producto.cantidad}</td>
-                  <td>{producto.categoria}</td>
-                  <td>{producto.precio}</td>
-                  <td>
-                    <button className="edit-button">✏️</button>
-                    <button className="delete-button" onClick={() => eliminarProducto(producto.id)}>🗑️</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button className="add-product-button">Añadir producto</button>
+    <div className="bg-blue-100 p-4 rounded-lg -mt-52">
+      <div className="flex items-center justify-between mb-4">
+        <select className="border rounded-md p-2">
+          <option value="">Categoría</option>
+          <option value="Gas Spring">Gas Spring</option>
+          <option value="Conveyors">Conveyors</option>
+          {/* Otras opciones */}
+        </select>
+        <input type="text" placeholder="Buscar" className="border rounded-md p-2 ml-2" />
       </div>
+
+      <table className="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
+        <thead>
+          <tr className="bg-gray-800 text-white text-left">
+            <th className="p-2">Id</th>
+            <th className="p-2">Nombre</th>
+            <th className="p-2">Descripción</th>
+            <th className="p-2">Cantidad</th>
+            <th className="p-2">Categoría</th>
+            <th className="p-2">Precio</th>
+            <th className="p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productos.map((producto) => (
+            <tr key={producto.id} className="border-b hover:bg-gray-100">
+              <td className="p-2">{producto.id}</td>
+              <td className="p-2">{producto.nombre}</td>
+              <td className="p-2">{producto.descripcion}</td>
+              <td className="p-2">{producto.cantidad}</td>
+              <td className="p-2">{producto.categoria}</td>
+              <td className="p-2">{producto.precio}</td>
+              <td className="p-2 flex">
+                <button className="text-blue-500 hover:text-blue-700 mr-2">✏️</button>
+                <button className="text-red-500 hover:text-red-700" onClick={() => eliminarProducto(producto.id)}>🗑️</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+      <button className="mt-4 bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">
+        Añadir producto
+      </button>
     </div>
   );
 };

@@ -86,9 +86,7 @@ const Personas = () => {
               <Table.HeadCell>Rol</Table.HeadCell>
               <Table.HeadCell>Zona</Table.HeadCell>
               <Table.HeadCell>Acciones</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Edit</span>
-              </Table.HeadCell>
+              
             </Table.Head>
             <Table.Body className="divide-y">
               {personas.map((persona, index) => (
@@ -104,8 +102,9 @@ const Personas = () => {
                   <Table.Cell>{persona.rol}</Table.Cell>
                   <Table.Cell>{persona.zona}</Table.Cell>
                   <Table.Cell className="acciones">
-                    <button className="editar-btn">{/*<FaPen />*/}</button>
-                    <button className="eliminar-btn">{/*<FaTrash />*/}</button>
+                  
+                    <button className="editar-btn">✏️</button>
+                    <button className="eliminar-btn">🗑️</button>
                   </Table.Cell>
                 </Table.Row>
               ))}

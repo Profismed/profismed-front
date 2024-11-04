@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Banner from './components/Banner'; // Asegúrate de importar tu componente de banner superior
+import  Banner  from './components/Banner'; 
 import LandingPage from './components/LandingPage';
 import Products from './components/Products';
 import Reports from './components/Reports';
@@ -14,14 +14,14 @@ function App() {
   const showBannerRoutes = ['/LandingPage', '/products', '/Reports'];
 
   return (
-    <div className="app-container">
+    <div className="app-container bg-blue-100">
       {/* Mostrar el Banner si estamos en una de las rutas definidas */}
       {showBannerRoutes.includes(location.pathname) && <Banner />}
       
       {/* Mostrar el Sidebar si no estamos en la ruta '/' */}
       {location.pathname !== '/' && <Sidebar />}
 
-      <div class="p-4 sm:ml-64">
+      <div className={location.pathname === '/' ? '' : 'p-4 sm:ml-64 bg-blue-100 h-screen'}>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/LandingPage" element={<LandingPage />} />

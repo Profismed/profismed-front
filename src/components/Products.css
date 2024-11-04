@@ -1,4 +1,4 @@
-Contenedor de productos
+/* Contenedor de productos
 .productos-container {
     display: flex;
     flex-direction: column;
@@ -73,10 +73,10 @@ Contenedor de productos
 
 .edit-button {
     color: #007bff;
-}
+} */
 
 /* Estilos Responsivos */
-@media (max-width: 1024px) {
+/* @media (max-width: 1024px) {
     .productos-content {
         margin-left: 0;
         width: 100%;
@@ -134,4 +134,4 @@ Contenedor de productos
         font-size: 14px;
         padding: 8px;
     }
-}
+} */

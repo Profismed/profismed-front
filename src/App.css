@@ -27,7 +27,7 @@
   top: 60px; /* Debajo del banner */
   left: 0;
   height: calc(100vh - 60px); /* Ocupa toda la altura restante debajo del banner */
-  background-color: #2C3E50;
+  background-color: #27f50b;
   z-index: 500; /* Menor que el banner */
 }
 
