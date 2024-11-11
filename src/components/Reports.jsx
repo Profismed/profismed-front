@@ -48,7 +48,7 @@ const SalesChart = () => {
   };
 
   return (
-    <div className="-mt-52" style={{ padding: '20px', backgroundColor: '#F0F0F0', borderRadius: '8px' }}>
+    <div  style={{ padding: '20px', backgroundColor: '#F0F0F0', borderRadius: '8px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
         <button 
           onClick={() => setPeriod('Mes')}

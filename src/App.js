@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import  Banner  from './components/Banner'; 
@@ -9,6 +10,8 @@ import Login from './components/Login';
 
 function App() {
   const location = useLocation();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Definir las rutas donde el banner debería aparecer
   const showBannerRoutes = ['/LandingPage', '/products', '/Reports'];
@@ -21,7 +24,19 @@ function App() {
       {/* Mostrar el Sidebar si no estamos en la ruta '/' */}
       {location.pathname !== '/' && <Sidebar />}
 
-      <div className={location.pathname === '/' ? '' : 'p-4 sm:ml-64 bg-blue-100 h-screen'}>
+
+
+      <div className={location.pathname === '/' ? '' : 'pt-10 px-4 sm:ml-64 bg-blue-100 h-screen '}>
+        
+      {location.pathname !== '/' && (
+        <Sidebar
+          isSidebarOpen={isSidebarOpen}
+          isMobileOpen={isMobileOpen}
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          toggleMobileSidebar={() => setIsMobileOpen(!isMobileOpen)}
+        />
+      )}
+        
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/LandingPage" element={<LandingPage />} />
