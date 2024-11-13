@@ -2,6 +2,8 @@ import "./Banner.css";
 import { useState, useEffect } from "react";
 import { Navbar, Dropdown, Avatar, Modal, Button } from "flowbite-react";
 import React from "react";
+import Swal from "sweetalert2";
+import { useNavigate } from 'react-router-dom';
 
 const Banner = () => {
   const [userName, setUserName] = useState("");
@@ -11,6 +13,7 @@ const Banner = () => {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -53,7 +56,23 @@ const Banner = () => {
       );
       if (response.ok) {
         console.log("Logged out successfully");
-        window.location.href = "/";
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Sesión cerrada exitosamente"
+        });
+        
+        navigate('/');
       } else {
         console.error("Logout failed");
       }
@@ -157,7 +176,7 @@ const Banner = () => {
             <Dropdown.Item onClick={openModal}>Cuenta</Dropdown.Item>{" "}
             {/* Botón para abrir el modal */}
             <Dropdown.Divider />
-            <Dropdown.Item onClick={handleLogout}>Sign out</Dropdown.Item>
+            <Dropdown.Item onClick={handleLogout}>Cerrar Sesión</Dropdown.Item>
           </Dropdown>
           <Navbar.Toggle />
         </div>

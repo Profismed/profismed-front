@@ -7,6 +7,7 @@ import LandingPage from './components/LandingPage';
 import Products from './components/Products';
 import Reports from './components/Reports';
 import Login from './components/Login';
+import Sales from './components/sales';
 
 function App() {
   const location = useLocation();
@@ -14,7 +15,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Definir las rutas donde el banner debería aparecer
-  const showBannerRoutes = ['/LandingPage', '/products', '/Reports'];
+  const showBannerRoutes = ['/LandingPage', '/products', '/Reports', '/Ventas'];
 
   return (
     <div className="app-container bg-blue-100">
@@ -42,6 +43,7 @@ function App() {
           <Route path="/LandingPage" element={<LandingPage />} />
           <Route path="/products" element={<Products />} />
           <Route path="/Reports" element={<Reports />} />
+          <Route path='/Ventas' element={<Sales/>} />
         </Routes>
       </div>
     </div>

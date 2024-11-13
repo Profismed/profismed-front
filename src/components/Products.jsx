@@ -11,7 +11,6 @@ const Productos = () => {
   useEffect(() => {
     // Realizar la petición fetch a la API de productos
     const fetchProductos = async () => {
-
       const requestOptions = {
         method: "GET",
         credentials: "include",
@@ -37,6 +36,45 @@ const Productos = () => {
     fetchProductos();
   }, []);
 
+  const handleCreateProduct = async () => {
+    // Realizar la petición fetch a la API para crear un producto
+
+    try {
+      const raw = JSON.stringify({
+        productName: "aunmasmildepanpruebaintegracion1",
+        productDescription: "Descripción detallada del pan",
+        productPrice: 300,
+        quantity: 50,
+        userId: 1,
+      });
+
+      const requestOptions = {
+        method: "POST",
+        body: raw,
+        credentials: "include",
+        redirect: "follow",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/products/create",
+        requestOptions
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Producto creado:", data);
+        setProductos([...productos, data]);
+        setIsModalOpen(false);
+      } else {
+        console.error("Error al crear el producto:", data);
+      }
+    } catch (error) {
+      console.error("Error al crear el producto:", error);
+    }
+  };
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -44,7 +82,7 @@ const Productos = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
-console.log(productos);
+  console.log(productos);
   return (
     <>
       <div className="w-full min-h-screen px-4">
@@ -138,16 +176,56 @@ console.log(productos);
               </tbody>
             </table>
           ) : (
-            <p className="text-gray-700 dark:text-gray-400">
-              No hay productos disponibles
-            </p>
+            <div
+              role="status"
+              class="w-full bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <div class="flex items-center justify-between pt-4">
+                <div>
+                  <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                </div>
+                <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+              </div>
+              <span class="sr-only">Loading...</span>
+            </div>
           )}
         </div>
 
         <div className="flex justify-end px-10">
           <button
             type="button"
-            onClick={openModal}
+            onClick={() => {
+              openModal();
+            }}
             className="text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-5 mb-2 dark:bg-lime-600 dark:hover:bg-lime-700 focus:outline-none dark:focus:ring-lime-800"
           >
             Añadir producto
@@ -170,11 +248,24 @@ console.log(productos);
               placeholder="Descripción"
               className="w-full"
             />
+            <TextInput label="Precio" placeholder="Precio" className="w-full" />
             <TextInput
-              label="Precio"
-              placeholder="Precio"
+              label="Cantidad"
+              placeholder="Cantidad"
               className="w-full"
             />
+
+            <Select
+              label="provedor Id"
+              placeholder="Seleccione una opción"
+              className="w-full col-span-2"
+              // onChange={(e) => setEditDocumentId(e.target.selectedIndex)}
+            >
+              <option value="CC">Selecciona un proveedor</option>
+              <option value="TI">provedor 1</option>
+              <option value="CE">proveedor 2</option>
+              <option value="PA">proveedor 3</option>
+            </Select>
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -185,7 +276,13 @@ console.log(productos);
             >
               <p className="text-lg">Cancelar</p>
             </Button>
-            <button className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200">
+            <button
+              onClick={() => {
+                handleCreateProduct();
+                closeModal();
+              }}
+              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+            >
               Añadir
             </button>
           </div>

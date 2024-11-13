@@ -1,34 +1,78 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   HiUser,
   HiShoppingBag,
   HiChartPie,
   HiArrowSmRight,
   HiMenu,
+  HiCurrencyDollar
 } from "react-icons/hi";
-import Cookies from 'js-cookie';
+import Swal from "sweetalert2";
 
 const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
+  const navigate = useNavigate();
   const location = useLocation();
+  const [userData, setUserData] = useState(null);
 
   const isActive = (path) => location.pathname === path;
 
+  const handlerRolId = async () => {
+    try {
+      const response = await fetch('https://profismedsgi.onrender.com/api/auth/userData', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application'
+        },
+        credentials: 'include'
+      });
+      const data = await response.json();
+      
+      console.log('Rol del usuario:', data);
+      setUserData(data);
+    } catch (error) {
+      console.error('Error al obtener el rol del usuario:', error);
+    }
+  };
+
+  useEffect(() => {
+    handlerRolId();
+  }, []);
+
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/auth/logout", {
-        method: "POST",
-      });
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/auth/logout",
+        {
+          method: "POST",
+          redirect: "follow",
+          credentials: "include",
+        }
+      );
       if (response.ok) {
-        console.log("Logout successful");
-        localStorage.removeItem('userData');
-        Cookies.remove('token');
-        window.location.href = "/";
+        console.log("Logged out successfully");
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Sesión cerrada exitosamente"
+        });
+        
+        navigate('/');
       } else {
         console.error("Logout failed");
       }
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error("An error occurred during logout", error);
     }
   };
 
@@ -53,23 +97,62 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
               isMobileOpen && toggleMobileSidebar ? "space-y-2" : "space-y-2"
             } font-medium`}
           >
-            <li>
-              <Link
-                to="/LandingPage"
-                className={`flex items-center p-2 hover:bg-gray-700 ${
-                  isActive("/LandingPage")
-                    ? "text-blue-500 border-r-4 border-blue-500"
-                    : "text-gray-400"
-                }`}
-              >
-                <HiUser className="w-6 h-6" />
-                <span
-                  className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+            {userData && userData.roleId === 1 ? (
+              <>
+                <li>
+                  <Link
+                    to="/LandingPage"
+                    className={`flex items-center p-2 hover:bg-gray-700 ${
+                      isActive("/LandingPage")
+                        ? "text-blue-500 border-r-4 border-blue-500"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    <HiUser className="w-6 h-6" />
+                    <span
+                      className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                    >
+                      Personas
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/Ventas"
+                    className={`flex items-center p-2 hover:bg-gray-700 ${
+                      isActive("/Ventas")
+                        ? "text-blue-500 border-r-4 border-blue-500"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    <HiCurrencyDollar className="w-6 h-6" />
+                    <span
+                      className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                    >
+                      Ventas
+                    </span>
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  to="/Ventas"
+                  className={`flex items-center p-2 hover:bg-gray-700 ${
+                    isActive("/Ventas")
+                      ? "text-blue-500 border-r-4 border-blue-500"
+                      : "text-gray-400"
+                  }`}
                 >
-                  Personas
-                </span>
-              </Link>
-            </li>
+                  <HiCurrencyDollar className="w-6 h-6" />
+                  <span
+                    className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                  >
+                    Ventas
+                  </span>
+                </Link>
+              </li>
+            )}
             <li>
               <Link
                 to="/products"
@@ -87,23 +170,25 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
                 </span>
               </Link>
             </li>
-            <li>
-              <Link
-                to="/Reports"
-                className={`flex items-center p-2 hover:bg-gray-700 ${
-                  isActive("/Reports")
-                    ? "text-blue-500 border-r-4 border-blue-500"
-                    : "text-gray-400"
-                }`}
-              >
-                <HiChartPie className="w-6 h-6" />
-                <span
-                  className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+            {userData && userData.roleId === 1 && (
+              <li>
+                <Link
+                  to="/Reports"
+                  className={`flex items-center p-2 hover:bg-gray-700 ${
+                    isActive("/Reports")
+                      ? "text-blue-500 border-r-4 border-blue-500"
+                      : "text-gray-400"
+                  }`}
                 >
-                  Reportes
-                </span>
-              </Link>
-            </li>
+                  <HiChartPie className="w-6 h-6" />
+                  <span
+                    className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                  >
+                    Reportes
+                  </span>
+                </Link>
+              </li>
+            )}
             <li>
               <Link
                 onClick={handleLogout}
@@ -121,6 +206,7 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
                 </span>
               </Link>
             </li>
+            
           </ul>
         </div>
       </aside>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, act } from "react";
 import { TextInput } from "flowbite-react";
 import { HiSearch } from "react-icons/hi";
 import { Modal, Button, Select } from "flowbite-react";
@@ -8,6 +8,7 @@ const Personas = () => {
   // Estado para almacenar las personas obtenidas de la API, inicializado como array vacío
   const [personas, setPersonas] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [newUsername, setNewUsername] = useState("goce");
   const [newFirstNmae, setNewFirstNmae] = useState("");
@@ -21,6 +22,19 @@ const Personas = () => {
   const [newUserContactOrigin, setNewUserContactOrigin] = useState("website");
   const [newLocationId, setNewLocationId] = useState(1);
   const [newPassword, setNewPassword] = useState("");
+
+  const [editUsername, setEditUsername] = useState("");
+  const [editFirstName, setEditFirstNmae] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editUserEmail, setEditUserEmail] = useState("");
+  const [editUserPhone, setEditUserPhone] = useState("");
+  const [editRoleId, setEditRoleId] = useState();
+  const [editDocumentId, setEditDocumentId] = useState();
+  const [editDocumentNumber, setEditDocumentNumber] = useState("");
+  const [editUserJob, setEditUserJob] = useState("");
+  const [editUserContactOrigin, setEditUserContactOrigin] = useState("");
+  const [editLocationId, setEditLocationId] = useState(1);
+  const [actualId, setActualId] = useState();
 
   // Función para hacer la petición fetch y obtener las personas
   useEffect(() => {
@@ -88,7 +102,82 @@ const Personas = () => {
         .then((response) => response.text())
         .then((result) => console.log(result))
         .catch((error) => console.error(error));
+    } catch (error) {
+      console.error("An error occurred during user edit", error);
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    console.log("Eliminando usuario");
+    try {
+      const requestOptions = {
+        method: "DELETE",
+        redirect: "follow",
+        credentials: "include",
+      };
+
+      fetch(
+        `https://profismedsgi.onrender.com/api/users/delete/${id}`,
+        requestOptions
+      )
+        .then((response) => response.text())
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
+    } catch (error) {
+      console.error("An error occurred during user delete", error);
+    }
+  };
+
+  const handleEditUser = async (id) => {
+    console.log("Editando usuario");
+
+    try {
+      const data = {
+        username: editUsername,
+        firstName: editFirstName,
+        lastName: editLastName,
+        userEmail: editUserEmail,
+        userPhone: editUserPhone,
+        roleId: editRoleId,
+        documentId: editDocumentId,
+        documentNumber: editDocumentNumber,
+        userJob: editUserJob,
+        userContactOrigin: editUserContactOrigin,
+        locationId: editLocationId,
+      };
       
+      const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([key, value]) => value !== undefined && value !== '')
+      );
+      
+      const raw = JSON.stringify(filteredData);
+      const requestOptions = {
+        method: "PUT",
+        body: raw,
+        redirect: "follow",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await fetch(
+        `https://profismedsgi.onrender.com/api/users/update/${id}`,
+        requestOptions
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log(
+        "User updated successfully:",
+        result,
+        response,
+        requestOptions,
+        raw
+      );
+      // setUserEmail(newEmail);
+      // setUserName(newName);
     } catch (error) {
       console.error("An error occurred during user edit", error);
     }
@@ -104,6 +193,14 @@ const Personas = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+  const openModalEdit = (id) => {
+    setIsModalEditOpen(true);
+    setActualId(id);
+  };
+
+  const closeModalEdit = () => {
+    setIsModalEditOpen(false);
   };
 
   return (
@@ -173,7 +270,15 @@ const Personas = () => {
                     <td className="px-6 py-4">{persona.roleId}</td>
                     <td className="px-6 py-4">{persona.locationId}</td>
                     <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
-                      <button className="text-blue-500 text-xl">✏️</button>
+                      <button
+                        onClick={() => {
+                          console.log(persona.userId);
+                          openModalEdit(persona.userId);
+                        }}
+                        className="text-blue-500 text-xl"
+                      >
+                        ✏️
+                      </button>
                       <button
                         className="text-red-500 text-xl"
                         onClick={() => {
@@ -188,7 +293,7 @@ const Personas = () => {
                             cancelButtonText: "Cancelar",
                           }).then((result) => {
                             if (result.isConfirmed) {
-                              // Acción de eliminación
+                              handleDeleteUser(persona.userId);
                               Swal.fire(
                                 "¡Eliminado!",
                                 "El registro ha sido eliminado.",
@@ -205,8 +310,48 @@ const Personas = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-4">
-                    No hay personas registradas.
+                  <td colSpan="6" className="text-center py-4 dark:text-white">
+                    <div
+                      role="status"
+                      class="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+                    >
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                        </div>
+                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                      </div>
+                      <div class="flex items-center justify-between pt-4">
+                        <div>
+                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                        </div>
+                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                      </div>
+                      <div class="flex items-center justify-between pt-4">
+                        <div>
+                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                        </div>
+                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                      </div>
+                      <div class="flex items-center justify-between pt-4">
+                        <div>
+                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                        </div>
+                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                      </div>
+                      <div class="flex items-center justify-between pt-4">
+                        <div>
+                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                        </div>
+                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                      </div>
+                      <span class="sr-only">Loading...</span>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -224,7 +369,7 @@ const Personas = () => {
           </button>
         </div>
       </div>
-      {/* Modal de Flowbite */}
+      {/* Modal de crear usuario */}
       <Modal show={isModalOpen} onClose={closeModal}>
         <Modal.Header>Añadir Persona</Modal.Header>
         <Modal.Body>
@@ -308,6 +453,161 @@ const Personas = () => {
               className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
             >
               Añadir
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal de editar usuario */}
+      {console.log(
+        "hola",
+        actualId,
+        "esta es la persona indicada",
+        personas.find((persona) => persona.userId === actualId)?.username
+      )}
+
+      <Modal show={isModalEditOpen} onClose={closeModalEdit}>
+        <Modal.Header>Editar Persona </Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextInput
+              label="Nombres"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.firstName
+              }
+              className="w-full"
+              onBlur={(e) => setEditFirstNmae(e.target.value)}
+            />
+            <TextInput
+              label="Apellidos"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.lastName
+              }
+              className="w-full"
+              onBlur={(e) => setEditLastName(e.target.value)}
+            />
+            <TextInput
+              label="username"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.username
+              }
+              className="w-full"
+              onBlur={(e) => setEditUsername(e.target.value)}
+            />
+            <TextInput
+              label="numero de telefono"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.userPhone
+              }
+              className="w-full"
+              onBlur={(e) => setEditUserPhone(e.target.value)}
+            />
+            <TextInput
+              label="tipo de trabajo"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)?.userJob
+              }
+              className="w-full"
+              onBlur={(e) => setEditUserJob(e.target.value)}
+            />
+            <TextInput
+              label="origen del contacto"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.userContactOrigin
+              }
+              className="w-full"
+              onBlur={(e) => setEditUserContactOrigin(e.target.value)}
+            />
+            <Select
+              label="Tipo de identificación"
+              placeholder="Seleccione una opción"
+              className="w-full"
+              onChange={(e) => setEditDocumentId(e.target.selectedIndex)}
+            >
+              <option value="CC">Cédula de ciudadanía</option>
+              <option value="TI">Tarjeta de identidad</option>
+              <option value="CE">Cédula de extranjería</option>
+              <option value="PA">Pasaporte</option>
+            </Select>
+            <TextInput
+              label="Número de documento"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)
+                  ?.documentNumber
+              }
+              className="w-full"
+              onBlur={(e) => setEditDocumentNumber(e.target.value)}
+            />
+            <div className="col-span-2">
+              <TextInput
+                label="Correo electrónico"
+                placeholder={
+                  personas.find((persona) => persona.userId === actualId)
+                    ?.userEmail
+                }
+                className="w-full"
+                onBlur={(e) => setEditUserEmail(e.target.value)}
+              />
+            </div>
+            <Select
+              label="Rol"
+              value={
+                editRoleId || // Si el estado `editRoleId` ha sido editado, lo usamos
+                personas.find((persona) => persona.userId === actualId)
+                  ?.roleId ||
+                "" // Usamos el valor de roleId directamente
+              }
+              className="w-full"
+              onChange={(e) => setEditRoleId(e.target.value)} // Actualizamos el estado con el valor de la opción seleccionada
+            >
+              <option value="2">Vendedor</option>
+              <option value="3">Cliente</option>
+              <option value="4">Proveedor</option>
+              <option value="5">Contacto</option>
+            </Select>
+            <Select
+              label="location"
+              placeholder={
+                personas.find((persona) => persona.userId === actualId)?.roleId
+              }
+              className="w-full "
+              value={
+                editLocationId || 
+                personas.find((persona) => persona.userId === actualId)
+                  ?.locationId ||
+                "" 
+              }
+              onChange={(e) => setEditLocationId(e.target.value)}
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              
+            </Select>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="flex flex-row justify-around space-x-10 mx-24">
+            <Button
+              className="bg-red-500 hover:bg-red-800 px-10"
+              onClick={closeModalEdit}
+            >
+              <p className="text-lg">Cancelar</p>
+            </Button>
+            <button
+              onClick={() => {
+                handleEditUser(actualId);
+                console.log("este es el id", actualId);
+
+                closeModalEdit();
+              }}
+              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+            >
+              Editar
             </button>
           </div>
         </Modal.Footer>
