@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Navbar, Dropdown, Avatar, Modal, Button } from "flowbite-react";
 import React from "react";
 import Swal from "sweetalert2";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const Banner = () => {
   const [userName, setUserName] = useState("");
@@ -55,7 +55,6 @@ const Banner = () => {
         }
       );
       if (response.ok) {
-        console.log("Logged out successfully");
         const Toast = Swal.mixin({
           toast: true,
           position: "top-end",
@@ -65,14 +64,14 @@ const Banner = () => {
           didOpen: (toast) => {
             toast.onmouseenter = Swal.stopTimer;
             toast.onmouseleave = Swal.resumeTimer;
-          }
+          },
         });
         Toast.fire({
           icon: "success",
-          title: "Sesión cerrada exitosamente"
+          title: "Sesión cerrada exitosamente",
         });
-        
-        navigate('/');
+
+        navigate("/");
       } else {
         console.error("Logout failed");
       }
@@ -80,11 +79,8 @@ const Banner = () => {
       console.error("An error occurred during logout", error);
     }
   };
-  console.log(newEmail, "nuevo email");
 
   const handleEditUser = async () => {
-    console.log("Editando usuario");
-
     try {
       const raw = JSON.stringify({
         username: newName,
@@ -109,13 +105,7 @@ const Banner = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      console.log(
-        "User updated successfully:",
-        result,
-        response,
-        requestOptions,
-        raw
-      );
+
       setUserEmail(newEmail);
       setUserName(newName);
     } catch (error) {
@@ -135,8 +125,6 @@ const Banner = () => {
     }
   }
 
-  console.log("Nombre: ", userName, " Email: ", userEmail, " Id: ", userId);
-
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -144,8 +132,6 @@ const Banner = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
-  console.log(userName, userEmail);
 
   return (
     <>

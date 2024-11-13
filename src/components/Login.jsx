@@ -1,5 +1,4 @@
-// Login.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css"; // Asegúrate de crear o adaptar los estilos si es necesario
 import Swal from "sweetalert2";
@@ -32,17 +31,41 @@ const Login = () => {
         }
       );
 
-      console.log("Respuesta del servidor:", response);
-
       if (response.ok) {
         const data = await response.json();
-        console.log("Login successful:", data);
 
-        // Imprimir la cookie en la consola
-        console.log("Cookies:", document.cookie);
+        // Obtener el rol del usuario
+        let userRole = "";
 
-        // Aquí puedes manejar la respuesta exitosa, por ejemplo, redirigir al usuario
-        navigate("/LandingPage");
+        // Obtener el rol del usuario
+        const requestOptions = {
+          method: "GET",
+          credentials: "include",
+          redirect: "follow",
+        };
+
+        try {
+          const response = await fetch(
+            "https://profismedsgi.onrender.com/api/auth/userData",
+            requestOptions
+          );
+          if (response.ok) {
+            const data = await response.json();
+
+            userRole = data.roleId;
+          } else {
+            console.error("Failed to fetch user data:", response.status);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+
+        if (userRole === 1) {
+          navigate("/LandingPage");
+        } else {
+          navigate("/products");
+        }
+        // navigate('/LandingPage');
         const Toast = Swal.mixin({
           toast: true,
           position: "top-end",

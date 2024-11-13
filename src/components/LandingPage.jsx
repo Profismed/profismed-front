@@ -50,7 +50,6 @@ const Personas = () => {
           requestOptions
         );
         const data = await response.json();
-        console.log("esta es la info de personas", data);
 
         // Verifica si data es un array, si no, asigna un array vacío
         if (Array.isArray(data)) {
@@ -68,7 +67,6 @@ const Personas = () => {
   }, []); // Se ejecuta al montar el componente
 
   const handleNewUser = async () => {
-    console.log("Creando usuario");
     try {
       const raw = JSON.stringify({
         username: newUsername,
@@ -84,7 +82,7 @@ const Personas = () => {
         locationId: newLocationId,
         password: newPassword,
       });
-      console.log("esto es raw", raw);
+
       const requestOptions = {
         method: "POST",
         body: raw,
@@ -108,7 +106,6 @@ const Personas = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    console.log("Eliminando usuario");
     try {
       const requestOptions = {
         method: "DELETE",
@@ -129,8 +126,6 @@ const Personas = () => {
   };
 
   const handleEditUser = async (id) => {
-    console.log("Editando usuario");
-
     try {
       const data = {
         username: editUsername,
@@ -145,11 +140,13 @@ const Personas = () => {
         userContactOrigin: editUserContactOrigin,
         locationId: editLocationId,
       };
-      
+
       const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key, value]) => value !== undefined && value !== '')
+        Object.entries(data).filter(
+          ([key, value]) => value !== undefined && value !== ""
+        )
       );
-      
+
       const raw = JSON.stringify(filteredData);
       const requestOptions = {
         method: "PUT",
@@ -169,15 +166,6 @@ const Personas = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      console.log(
-        "User updated successfully:",
-        result,
-        response,
-        requestOptions,
-        raw
-      );
-      // setUserEmail(newEmail);
-      // setUserName(newName);
     } catch (error) {
       console.error("An error occurred during user edit", error);
     }
@@ -272,7 +260,6 @@ const Personas = () => {
                     <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
                       <button
                         onClick={() => {
-                          console.log(persona.userId);
                           openModalEdit(persona.userId);
                         }}
                         className="text-blue-500 text-xl"
@@ -313,44 +300,44 @@ const Personas = () => {
                   <td colSpan="6" className="text-center py-4 dark:text-white">
                     <div
                       role="status"
-                      class="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+                      className="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
                     >
-                      <div class="flex items-center justify-between">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <span class="sr-only">Loading...</span>
+                      <span className="sr-only">Loading...</span>
                     </div>
                   </td>
                 </tr>
@@ -459,12 +446,6 @@ const Personas = () => {
       </Modal>
 
       {/* Modal de editar usuario */}
-      {console.log(
-        "hola",
-        actualId,
-        "esta es la persona indicada",
-        personas.find((persona) => persona.userId === actualId)?.username
-      )}
 
       <Modal show={isModalEditOpen} onClose={closeModalEdit}>
         <Modal.Header>Editar Persona </Modal.Header>
@@ -577,16 +558,15 @@ const Personas = () => {
               }
               className="w-full "
               value={
-                editLocationId || 
+                editLocationId ||
                 personas.find((persona) => persona.userId === actualId)
                   ?.locationId ||
-                "" 
+                ""
               }
               onChange={(e) => setEditLocationId(e.target.value)}
             >
               <option value="1">1</option>
               <option value="2">2</option>
-              
             </Select>
           </div>
         </Modal.Body>
@@ -601,7 +581,6 @@ const Personas = () => {
             <button
               onClick={() => {
                 handleEditUser(actualId);
-                console.log("este es el id", actualId);
 
                 closeModalEdit();
               }}

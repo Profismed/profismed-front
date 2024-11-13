@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
-import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const Sales = () => {
   const [data, setData] = useState([]);
@@ -9,10 +9,8 @@ const Sales = () => {
   const [productos, setProductos] = useState([]);
   const [userSesionId, setUserSesionId] = useState();
   const [buyerSesionId, setBuyerSesionId] = useState();
-  const [parent] = useAutoAnimate(/* optional config */)
+  const [parent] = useAutoAnimate(/* optional config */);
 
- 
- 
   useEffect(() => {
     const fetchPersonas = async () => {
       const requestOptions = {
@@ -26,7 +24,6 @@ const Sales = () => {
           requestOptions
         );
         const data = await response.json();
-        console.log("esta es la info de personas", data);
 
         // Verifica si data es un array, si no, asigna un array vacío
         if (Array.isArray(data)) {
@@ -47,7 +44,7 @@ const Sales = () => {
     //       credentials: "include",
     //       redirect: "follow",
     //     };
-  
+
     //     try {
     //       const response = await fetch(
     //         "https://profismedsgi.onrender.com/api/auth/userData",
@@ -56,7 +53,7 @@ const Sales = () => {
     //       if (response.ok) {
     //         const data = await response.json();
     //         setUserSesionId(data.userId);
-            
+
     //       } else {
     //         console.error("Failed to fetch user data:", response.status);
     //       }
@@ -64,7 +61,6 @@ const Sales = () => {
     //       console.error("Error fetching user data:", error);
     //     }
     //   };
-  
 
     const fetchProductos = async () => {
       const requestOptions = {
@@ -145,7 +141,6 @@ const Sales = () => {
           return item;
         });
         setData(updatedData);
-
       } else {
         // Producto no existe, agregar nuevo producto
         const total = producto.productPrice * cantidad;
@@ -163,54 +158,48 @@ const Sales = () => {
 
   const handleSaveOrder = async (buyId, sellId) => {
     const raw = JSON.stringify({
-        buyerId: buyId,
-        sellerId: sellId,
-        items: data.map((item) => ({
-            productId: item.productId,
-            productQuantity: item.cantidad,
-        })),
+      buyerId: buyId,
+      sellerId: sellId,
+      items: data.map((item) => ({
+        productId: item.productId,
+        productQuantity: item.cantidad,
+      })),
     });
 
-    console.log("Order data:", raw);
-    
-
     const requestOptions = {
-        method: "POST",
-        body: raw,
-        redirect: "follow",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-        },
+      method: "POST",
+      body: raw,
+      redirect: "follow",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     };
 
     try {
-        const response = await fetch(
-            "https://profismedsgi.onrender.com/api/sales/create",
-            requestOptions
-        );
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/sales/create",
+        requestOptions
+      );
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        // Verifica si la respuesta es JSON antes de parsearla
-        const text = await response.text();
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch {
-            result = text; // Si no es JSON, simplemente guarda el texto
-        }
+      // Verifica si la respuesta es JSON antes de parsearla
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        result = text; // Si no es JSON, simplemente guarda el texto
+      }
 
-        console.log("Order created successfully:", result);
-        setData([]);
+      setData([]);
     } catch (error) {
-        console.error("An error occurred during order creation", error);
+      console.error("An error occurred during order creation", error);
     }
-};
-
-
+  };
 
   function handleRemoveAllProducts() {
     setData([]);
@@ -252,10 +241,6 @@ const Sales = () => {
   const iva = calculateIVA(subtotal);
   const total = calculateTotal(subtotal, iva, DESCUENTO);
 
-  console.log("este es el comprador", buyerSesionId, "este es el vendedor", userSesionId);
-  
-
-
   return (
     <>
       <div className="flex flex-col ml-10 max-w-sm mx-auto">
@@ -269,11 +254,7 @@ const Sales = () => {
           id="clients"
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           onChange={(event) => {
-            
-             setBuyerSesionId(event.target.value);
-             console.log(event.target.value, "esta monda es el userId del comprador");
-             
-            // console.log(buyerSesionId); // Aquí puedes hacer lo que necesites con userSesionId
+            setBuyerSesionId(event.target.value);
           }}
         >
           <option selected>Selecione un cliente</option>
@@ -375,7 +356,9 @@ const Sales = () => {
           <div className="flex flex-col items-center mt-10">
             <div className="flex flex-row justify-between w-full max-w-md">
               <p className="font-semibold text-lg text-blue-500">Subtotal:</p>
-              <p className="font-semibold text-lg">{formatCurrency(subtotal)}</p>
+              <p className="font-semibold text-lg">
+                {formatCurrency(subtotal)}
+              </p>
             </div>
           </div>
 
@@ -383,7 +366,9 @@ const Sales = () => {
           <div className="flex flex-col items-center mt-2">
             <div className="flex flex-row justify-between w-full max-w-md">
               <p className="font-semibold text-lg text-blue-500">Descuento:</p>
-              <p className="font-semibold text-lg">{formatCurrency(DESCUENTO)}</p>
+              <p className="font-semibold text-lg">
+                {formatCurrency(DESCUENTO)}
+              </p>
             </div>
           </div>
 
