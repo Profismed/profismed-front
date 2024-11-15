@@ -88,7 +88,7 @@ const Personas = () => {
       });
 
       console.log(raw);
-      
+
       const requestOptions = {
         method: "POST",
         body: raw,
@@ -282,8 +282,20 @@ const Personas = () => {
                     </th>
                     <td className="px-6 py-4">{persona.userEmail}</td>
                     <td className="px-6 py-4">{persona.userPhone}</td>
-                    <td className="px-6 py-4">{persona.roleId}</td>
-                    <td className="px-6 py-4">{persona.locationId}</td>
+                    <td className="px-6 py-4">
+                      {{
+                        2: "Vendedor",
+                        3: "Cliente",
+                        4: "Proveedor",
+                        5: "Contacto",
+                      }[persona.roleId] || "Desconocido"}
+                    </td>
+                    <td className="px-6 py-4">
+                      {{
+                        1: "Bogotá",
+                        2: "Tunja",
+                      }[persona.locationId] || "Desconocido"}
+                    </td>
                     <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
                       <button
                         onClick={() => {

@@ -15,6 +15,49 @@ const Login = () => {
     setErrorMessage("");
   };
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const requestOptions = {
+        method: "GET",
+        credentials: "include",
+        redirect: "follow",
+      };
+
+      try {
+        const response = await fetch(
+          "https://profismedsgi.onrender.com/api/auth/userData",
+          requestOptions
+        );
+        if (response.ok) {
+          navigate("/LandingPage");
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+          Toast.fire({
+            icon: "info",
+            title: "Sesión ya iniciada",
+          });
+
+        } else {
+          console.error("Failed to fetch user data:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    checkSession();
+  });
+
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
@@ -84,7 +127,29 @@ const Login = () => {
       } else {
         const error = await response.json();
         console.error("Login failed:", error);
-        setErrorMessage(error.message);
+        if (error.message === "Session already active") {
+          setErrorMessage("Usuario no encontrado)");
+          navigate('/LandingPage');
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+          Toast.fire({
+            icon: "info",
+            title: "Sesión ya iniciada",
+          });
+        }else {
+          setErrorMessage("Fallo incio de ssesión");
+        }
+        
+            
       }
     } catch (error) {
       console.error("Login failed:", error);
