@@ -6,7 +6,7 @@ import {
   HiChartPie,
   HiArrowSmRight,
   HiMenu,
-  HiCurrencyDollar
+  HiCurrencyDollar,
 } from "react-icons/hi";
 import Swal from "sweetalert2";
 
@@ -19,19 +19,21 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
 
   const handlerRolId = async () => {
     try {
-      const response = await fetch('https://profismedsgi.onrender.com/api/auth/userData', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application'
-        },
-        credentials: 'include'
-      });
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/auth/userData",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application",
+          },
+          credentials: "include",
+        }
+      );
       const data = await response.json();
-      
-      console.log('Rol del usuario:', data);
+
       setUserData(data);
     } catch (error) {
-      console.error('Error al obtener el rol del usuario:', error);
+      console.error("Error al obtener el rol del usuario:", error);
     }
   };
 
@@ -50,7 +52,6 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
         }
       );
       if (response.ok) {
-        console.log("Logged out successfully");
         const Toast = Swal.mixin({
           toast: true,
           position: "top-end",
@@ -60,14 +61,14 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
           didOpen: (toast) => {
             toast.onmouseenter = Swal.stopTimer;
             toast.onmouseleave = Swal.resumeTimer;
-          }
+          },
         });
         Toast.fire({
           icon: "success",
-          title: "Sesión cerrada exitosamente"
+          title: "Sesión cerrada exitosamente",
         });
-        
-        navigate('/');
+
+        navigate("/");
       } else {
         console.error("Logout failed");
       }
@@ -206,7 +207,6 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
                 </span>
               </Link>
             </li>
-            
           </ul>
         </div>
       </aside>

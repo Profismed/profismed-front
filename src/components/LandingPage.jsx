@@ -10,17 +10,21 @@ const Personas = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [newUsername, setNewUsername] = useState("goce");
+
+  const [searchTerm, setSearchTerm] = useState(""); // Para el filtro de nombre
+  const [selectedRole, setSelectedRole] = useState(""); // Para el filtro de rol
+
+  const [newUsername, setNewUsername] = useState("");
   const [newFirstNmae, setNewFirstNmae] = useState("");
   const [newLastName, setNewLastName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPhone, setNewUserPhone] = useState("+5775856785678");
-  const [newRoleId, setNewRoleId] = useState(1);
+  const [newUserPhone, setNewUserPhone] = useState("");
+  const [newRoleId, setNewRoleId] = useState();
   const [newDocumentId, setNewDocumentId] = useState(1);
   const [newDocumentNumber, setNewDocumentNumber] = useState("");
-  const [newUserJob, setNewUserJob] = useState("camarografo");
-  const [newUserContactOrigin, setNewUserContactOrigin] = useState("website");
-  const [newLocationId, setNewLocationId] = useState(1);
+  const [newUserJob, setNewUserJob] = useState("");
+  const [newUserContactOrigin, setNewUserContactOrigin] = useState("");
+  const [newLocationId, setNewLocationId] = useState();
   const [newPassword, setNewPassword] = useState("");
 
   const [editUsername, setEditUsername] = useState("");
@@ -50,7 +54,6 @@ const Personas = () => {
           requestOptions
         );
         const data = await response.json();
-        console.log("esta es la info de personas", data);
 
         // Verifica si data es un array, si no, asigna un array vacío
         if (Array.isArray(data)) {
@@ -68,7 +71,6 @@ const Personas = () => {
   }, []); // Se ejecuta al montar el componente
 
   const handleNewUser = async () => {
-    console.log("Creando usuario");
     try {
       const raw = JSON.stringify({
         username: newUsername,
@@ -84,7 +86,9 @@ const Personas = () => {
         locationId: newLocationId,
         password: newPassword,
       });
-      console.log("esto es raw", raw);
+
+      console.log(raw);
+
       const requestOptions = {
         method: "POST",
         body: raw,
@@ -108,7 +112,6 @@ const Personas = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    console.log("Eliminando usuario");
     try {
       const requestOptions = {
         method: "DELETE",
@@ -129,8 +132,6 @@ const Personas = () => {
   };
 
   const handleEditUser = async (id) => {
-    console.log("Editando usuario");
-
     try {
       const data = {
         username: editUsername,
@@ -145,11 +146,13 @@ const Personas = () => {
         userContactOrigin: editUserContactOrigin,
         locationId: editLocationId,
       };
-      
+
       const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key, value]) => value !== undefined && value !== '')
+        Object.entries(data).filter(
+          ([key, value]) => value !== undefined && value !== ""
+        )
       );
-      
+
       const raw = JSON.stringify(filteredData);
       const requestOptions = {
         method: "PUT",
@@ -169,22 +172,9 @@ const Personas = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      console.log(
-        "User updated successfully:",
-        result,
-        response,
-        requestOptions,
-        raw
-      );
-      // setUserEmail(newEmail);
-      // setUserName(newName);
     } catch (error) {
       console.error("An error occurred during user edit", error);
     }
-  };
-
-  const handleClick = () => {
-    setIsSaved(!isSaved); // Alternar el estado de "guardado"
   };
 
   const openModal = () => {
@@ -203,6 +193,25 @@ const Personas = () => {
     setIsModalEditOpen(false);
   };
 
+  // Función para manejar el cambio en el campo de búsqueda
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Función para manejar el cambio en el select del rol
+  const handleRoleChange = (e) => {
+    setSelectedRole(e.target.value);
+  };
+
+  // Filtrar personas en base a los criterios de búsqueda y rol seleccionado
+  const filteredPersonas = personas.filter((persona) => {
+    const matchesRole =
+      selectedRole === "" || persona.roleId.toString() === selectedRole;
+    const matchesName = persona.firstName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    return matchesRole && matchesName;
+  });
   return (
     <>
       <div className="w-full min-h-screen px-4">
@@ -214,17 +223,23 @@ const Personas = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row justify-end space-x-8 items-center mb-4">
-          <select className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-            <option selected>Categoria</option>
-            <option value="US">United States</option>
-            <option value="CA">Canada</option>
-            <option value="FR">France</option>
-            <option value="DE">Germany</option>
+          <select
+            className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            value={selectedRole}
+            onChange={handleRoleChange}
+          >
+            <option value="">Rol</option>
+            <option value="2">Vendedor</option>
+            <option value="3">Cliente</option>
+            <option value="4">Proveedor</option>
+            <option value="5">Contacto</option>
           </select>
           <TextInput
             className="w-full sm:w-44 mb-2 sm:mb-0"
             placeholder="Buscar"
             icon={HiSearch}
+            value={searchTerm}
+            onChange={handleSearchChange}
           />
         </div>
 
@@ -253,8 +268,8 @@ const Personas = () => {
               </tr>
             </thead>
             <tbody>
-              {personas.length > 0 ? (
-                personas.map((persona, index) => (
+              {filteredPersonas.length > 0 ? (
+                filteredPersonas.map((persona, index) => (
                   <tr
                     key={index}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
@@ -267,12 +282,23 @@ const Personas = () => {
                     </th>
                     <td className="px-6 py-4">{persona.userEmail}</td>
                     <td className="px-6 py-4">{persona.userPhone}</td>
-                    <td className="px-6 py-4">{persona.roleId}</td>
-                    <td className="px-6 py-4">{persona.locationId}</td>
+                    <td className="px-6 py-4">
+                      {{
+                        2: "Vendedor",
+                        3: "Cliente",
+                        4: "Proveedor",
+                        5: "Contacto",
+                      }[persona.roleId] || "Desconocido"}
+                    </td>
+                    <td className="px-6 py-4">
+                      {{
+                        1: "Bogotá",
+                        2: "Tunja",
+                      }[persona.locationId] || "Desconocido"}
+                    </td>
                     <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
                       <button
                         onClick={() => {
-                          console.log(persona.userId);
                           openModalEdit(persona.userId);
                         }}
                         className="text-blue-500 text-xl"
@@ -313,44 +339,44 @@ const Personas = () => {
                   <td colSpan="6" className="text-center py-4 dark:text-white">
                     <div
                       role="status"
-                      class="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+                      className="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
                     >
-                      <div class="flex items-center justify-between">
+                      <div className="flex items-center justify-between">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <div class="flex items-center justify-between pt-4">
+                      <div className="flex items-center justify-between pt-4">
                         <div>
-                          <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div class="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
+                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                         </div>
-                        <div class="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
+                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
                       </div>
-                      <span class="sr-only">Loading...</span>
+                      <span className="sr-only">Loading...</span>
                     </div>
                   </td>
                 </tr>
@@ -386,16 +412,28 @@ const Personas = () => {
               className="w-full"
               onBlur={(e) => setNewLastName(e.target.value)}
             />
+            <TextInput
+              label="nombre de usuario"
+              placeholder="Username"
+              className="w-full"
+              onBlur={(e) => setNewUsername(e.target.value)}
+            />
+            <TextInput
+              label="numero de telefono"
+              placeholder="Numero de telefono"
+              className="w-full"
+              onBlur={(e) => setNewUserPhone(e.target.value)}
+            />
             <Select
               label="Tipo de identificación"
               placeholder="Seleccione una opción"
               className="w-full"
-              onChange={(e) => setNewDocumentId(e.target.selectedIndex)}
+              onChange={(e) => setNewDocumentId(e.target.value)}
             >
-              <option value="CC">Cédula de ciudadanía</option>
-              <option value="TI">Tarjeta de identidad</option>
-              <option value="CE">Cédula de extranjería</option>
-              <option value="PA">Pasaporte</option>
+              <option value="1">Cédula de ciudadanía</option>
+              <option value="2">Tarjeta de identidad</option>
+              <option value="3">Cédula de extranjería</option>
+              <option value="4">Pasaporte</option>
             </Select>
             <TextInput
               label="Número de documento"
@@ -427,13 +465,40 @@ const Personas = () => {
             <Select
               label="Rol"
               placeholder="Seleccione un rol"
-              className="w-full col-span-2"
-              onChange={(e) => setNewRoleId(e.target.selectedIndex)}
+              className="w-full "
+              onChange={(e) => {
+                setNewRoleId(e.target.value);
+                console.log(e.target.value);
+              }}
             >
-              <option value="vendedor">Vendedor</option>
-              <option value="cliente">Cliente</option>
-              <option value="proveedor">Proveedor</option>
-              <option value="contacto">Contacto</option>
+              <option value="2">Vendedor</option>
+              <option value="3">Cliente</option>
+              <option value="4">Proveedor</option>
+              <option value="5">Contacto</option>
+            </Select>
+            <TextInput
+              label="Trabajo del usuario"
+              placeholder="Describa el trabajo del usuario"
+              className="w-full"
+              onBlur={(e) => setNewUserJob(e.target.value)}
+            />
+            <TextInput
+              label="Origen del contacto"
+              placeholder="Origen del contacto"
+              className="w-full"
+              onBlur={(e) => setNewUserContactOrigin(e.target.value)}
+            />
+            <Select
+              label="ubicación"
+              placeholder="Seleccione una ubicacion"
+              className="w-full "
+              onChange={(e) => {
+                setNewLocationId(e.target.value);
+                console.log(e.target.value);
+              }}
+            >
+              <option value="1">Bogota</option>
+              <option value="2">Tunja</option>
             </Select>
           </div>
         </Modal.Body>
@@ -459,12 +524,6 @@ const Personas = () => {
       </Modal>
 
       {/* Modal de editar usuario */}
-      {console.log(
-        "hola",
-        actualId,
-        "esta es la persona indicada",
-        personas.find((persona) => persona.userId === actualId)?.username
-      )}
 
       <Modal show={isModalEditOpen} onClose={closeModalEdit}>
         <Modal.Header>Editar Persona </Modal.Header>
@@ -577,16 +636,15 @@ const Personas = () => {
               }
               className="w-full "
               value={
-                editLocationId || 
+                editLocationId ||
                 personas.find((persona) => persona.userId === actualId)
                   ?.locationId ||
-                "" 
+                ""
               }
               onChange={(e) => setEditLocationId(e.target.value)}
             >
               <option value="1">1</option>
               <option value="2">2</option>
-              
             </Select>
           </div>
         </Modal.Body>
@@ -601,7 +659,6 @@ const Personas = () => {
             <button
               onClick={() => {
                 handleEditUser(actualId);
-                console.log("este es el id", actualId);
 
                 closeModalEdit();
               }}
