@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TextInput } from "flowbite-react";
 import { HiSearch } from "react-icons/hi";
-import { Modal, Button, Select } from "flowbite-react";
+import { Modal, Button, Select, Pagination } from "flowbite-react";
 import Swal from "sweetalert2";
 
 const Productos = () => {
@@ -9,6 +9,9 @@ const Productos = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const [productsPerPage] = useState(10); // Cantidad de productos por página
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
@@ -110,12 +113,14 @@ const Productos = () => {
           (producto) => producto.productId !== productId
         );
         setProductos(updatedProducts);
+
       } else {
         console.error("Error al eliminar el producto:", response.status);
       }
     } catch (error) {
       console.error("Error al eliminar el producto:", error);
     }
+    fetchProductos();
   };
 
   const handleEditProduct = async (productId) => {
@@ -163,6 +168,14 @@ const Productos = () => {
     }
   };
 
+   // Calcular los productos a mostrar en la página actual
+   const indexOfLastProduct = currentPage * productsPerPage;
+   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+ 
+   // Cambiar de página
+   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -183,6 +196,7 @@ const Productos = () => {
     setEditProductPrice("");
     setEditQuantity("");
     setEditProviderId("");
+    fetchProductos();
   };
 
   // Manejar cambios en el término de búsqueda
@@ -250,37 +264,21 @@ const Productos = () => {
         </div>
 
         <div className="relative overflow-x-auto">
-          {filteredProducts.length > 0 ? (
+          {currentProducts.length > 0 ? (
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Nombre
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Descripción
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Cantidad
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Precio
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Acciones
-                  </th>
+                  <th scope="col" className="px-6 py-3">Nombre</th>
+                  <th scope="col" className="px-6 py-3">Descripción</th>
+                  <th scope="col" className="px-6 py-3">Cantidad</th>
+                  <th scope="col" className="px-6 py-3">Precio</th>
+                  <th scope="col" className="px-6 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((producto, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                  >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                    >
+                {currentProducts.map((producto, index) => (
+                  <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {producto.productName}
                     </th>
                     <td className="px-6 py-4">{producto.productDescription}</td>
@@ -310,6 +308,7 @@ const Productos = () => {
                           }).then((result) => {
                             if (result.isConfirmed) {
                               handleDeleteProduct(producto.productId);
+                              
                               Swal.fire(
                                 "¡Eliminado!",
                                 "El producto ha sido eliminado.",
@@ -369,6 +368,14 @@ const Productos = () => {
               <span className="sr-only">Loading...</span>
             </div>
           )}
+          {/* Paginador de Flowbite */}
+        <div className="mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredProducts.length / productsPerPage)}
+            onPageChange={paginate}
+          />
+        </div>
         </div>
 
         <div className="flex justify-end px-10">

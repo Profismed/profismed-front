@@ -18,7 +18,7 @@ function App() {
   const showBannerRoutes = ['/LandingPage', '/products', '/Reports', '/Ventas'];
 
   return (
-    <div className="app-container bg-blue-100">
+    <div className=" bg-blue-100">
       {/* Mostrar el Banner si estamos en una de las rutas definidas */}
       {showBannerRoutes.includes(location.pathname) && <Banner />}
       
@@ -27,7 +27,7 @@ function App() {
 
 
 
-      <div className={location.pathname === '/' ? '' : 'pt-10 px-4 sm:ml-64 bg-blue-100 h-screen '}>
+      <div className={location.pathname === '/' ? '' : 'pt-10 px-4 sm:ml-64 bg-blue-100  '}>
         
       {location.pathname !== '/' && (
         <Sidebar

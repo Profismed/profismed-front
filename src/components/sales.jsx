@@ -269,204 +269,210 @@ const Sales = () => {
 
   return (
     <>
-      <div className="flex flex-col ml-10 max-w-sm mx-auto">
-        <label
-          htmlFor="clients"
-          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-        >
-          Selecciona un cliente:
-        </label>
-        <select
-          id="clients"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          onChange={(event) => {
-            setBuyerSesionId(event.target.value);
-          }}
-        >
-          <option selected>Seleccione un cliente</option>
-          {personas
-            .filter((persona) => persona.roleId === 3) // Filtramos para que solo queden las personas con userId 3
-            .map((persona) => (
-              <option key={persona.userId} value={persona.userId}>
-                {persona.firstName}
-              </option>
-            ))}
-        </select>
-        {/*<p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>*/}
-      </div>
-      <div className="flex flex-row mt-10 justify-start space-x-7">
-        <div className="flex flex-col ml-10 max-w-sm">
+      <div className="h-dvh w-full">
+        <div className="flex flex-col ml-10 max-w-sm mx-auto">
           <label
-            htmlFor="products"
+            htmlFor="clients"
             className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Selecciona un producto:
+            Selecciona un cliente:
           </label>
           <select
-            id="products"
+            id="clients"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            onChange={(event) => {
+              setBuyerSesionId(event.target.value);
+            }}
           >
-            <option selected>Selecione un producto</option>
-            {productos.map((producto) => (
-              <option key={producto.productId} value={producto.productId}>
-                {producto.productName}
-              </option>
-            ))}
+            <option selected>Seleccione un cliente</option>
+            {personas
+              .filter((persona) => persona.roleId === 3) // Filtramos para que solo queden las personas con userId 3
+              .map((persona) => (
+                <option key={persona.userId} value={persona.userId}>
+                  {persona.firstName}
+                </option>
+              ))}
           </select>
+          {/*<p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>*/}
         </div>
-        <div className="max-w-sm mx-auto">
-          <label
-            htmlFor="quantity"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Cantidad:
-          </label>
-          <input
-            type="number"
-            id="quantity"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Cantidad"
-            min={1}
-            required
-          />
+        <div className="flex flex-row mt-10 justify-start space-x-7">
+          <div className="flex flex-col ml-10 max-w-sm">
+            <label
+              htmlFor="products"
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >
+              Selecciona un producto:
+            </label>
+            <select
+              id="products"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+              <option selected>Selecione un producto</option>
+              {productos.map((producto) => (
+                <option key={producto.productId} value={producto.productId}>
+                  {producto.productName}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="max-w-sm mx-auto">
+            <label
+              htmlFor="quantity"
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >
+              Cantidad:
+            </label>
+            <input
+              type="number"
+              id="quantity"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Cantidad"
+              min={1}
+              required
+            />
+          </div>
+          <div className="flex">
+            <button
+              type="button"
+              onClick={handleAddProduct}
+              className="text-gray-900 my-5 bg-gradient-to-r from-lime-200 via-lime-400 to-lime-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-lime-300 dark:focus:ring-lime-800 shadow-lg shadow-lime-500/50 dark:shadow-lg dark:shadow-lime-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            >
+              Agregar
+            </button>
+          </div>
         </div>
-        <div className="flex">
+        <div className="overflow-x-auto mt-10 mx-10">
+          <table className="min-w-full bg-gray-100 rounded-lg">
+            <thead>
+              <tr className="bg-gray-300 text-left text-gray-700">
+                <th className="py-3 px-4 font-semibold">ID</th>
+                <th className="py-3 px-4 font-semibold">Nombre</th>
+                <th className="py-3 px-4 font-semibold">Descripción</th>
+                <th className="py-3 px-4 font-semibold">Cantidad</th>
+                <th className="py-3 px-4 font-semibold">Valor Unit</th>
+                <th className="py-3 px-4 font-semibold">Total</th>
+                <th className="py-3 px-4 font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody ref={parent}>
+              {data.map((item, index) => (
+                <tr key={index} className="border-b border-gray-300">
+                  <td className="py-3 px-4">{item.productId}</td>
+                  <td className="py-3 px-4 font-semibold">
+                    {item.productName}
+                  </td>
+                  <td className="py-3 px-4">{item.productDescription}</td>
+                  <td className="py-3 px-4">{item.cantidad}</td>
+                  <td className="py-3 px-4">
+                    ${item.productPrice.toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4">${item.total.toLocaleString()}</td>
+                  <td className="py-3 px-4">
+                    <button
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => handleRemoveProduct(index)}
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-row justify-end mt-10 mr-10">
+          <div className="flex flex-col justify-end mx-10 my-5">
+            {/* Subtotal */}
+            <div className="flex flex-col items-center mt-10">
+              <div className="flex flex-row justify-between w-full max-w-md">
+                <p className="font-semibold text-lg text-blue-500">Subtotal:</p>
+                <p className="font-semibold text-lg">
+                  {formatCurrency(subtotal)}
+                </p>
+              </div>
+            </div>
+
+            {/* Descuento */}
+            <div className="flex flex-col items-center mt-2">
+              <div className="flex flex-row justify-between w-full max-w-md">
+                <p className="font-semibold text-lg text-blue-500">
+                  Descuento:
+                </p>
+                <p className="font-semibold text-lg">
+                  {formatCurrency(DESCUENTO)}
+                </p>
+              </div>
+            </div>
+
+            {/* IVA */}
+            <div className="flex flex-col items-center mt-2">
+              <div className="flex flex-row justify-between w-full max-w-md">
+                <p className="font-semibold text-lg text-blue-500">IVA:</p>
+                <p className="font-semibold text-lg">{formatCurrency(iva)}</p>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="flex flex-col items-center mt-2">
+              <div className="flex flex-row justify-between w-full max-w-md">
+                <p className="font-semibold text-lg text-blue-500">Total:</p>
+                <p className="font-semibold text-lg">{formatCurrency(total)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-row justify-between mx-10">
           <button
             type="button"
-            onClick={handleAddProduct}
-            className="text-gray-900 my-5 bg-gradient-to-r from-lime-200 via-lime-400 to-lime-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-lime-300 dark:focus:ring-lime-800 shadow-lg shadow-lime-500/50 dark:shadow-lg dark:shadow-lime-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            onClick={handleRemoveAllProducts}
+            className="text-gray-900 my-5 bg-gradient-to-r from-red-200 via-red-400 to-red-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex items-center"
           >
-            Agregar
+            <FaTrashAlt className="mr-2" />
+            Limpiar
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                // Espera a que `handleSaveOrder` se complete
+                const success = await handleSaveOrder(
+                  buyerSesionId,
+                  userSesionId
+                );
+
+                // Si `handleSaveOrder` devuelve éxito, muestra el Swal
+                if (success) {
+                  Swal.fire({
+                    title: "Venta confirmada",
+                    text: "La venta ha sido confirmada exitosamente.",
+                    icon: "success",
+                    confirmButtonText: "Aceptar",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      handleRemoveAllProducts(); // Llama a `handleRemoveAllProducts` si el usuario confirma
+                    }
+                  });
+                } else {
+                  // Si `handleSaveOrder` falla, muestra un error
+                  Swal.fire({
+                    title: "Error",
+                    text: "Ocurrió un error al guardar la venta.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar",
+                  });
+                }
+              } catch (error) {
+                // Puedes manejar cualquier error aquí si `handleSaveOrder` falla
+                console.error("Error al guardar la venta:", error);
+              }
+            }}
+            className="text-gray-900 my-5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+          >
+            Confirmar venta
           </button>
         </div>
-      </div>
-      <div className="overflow-x-auto mt-10 mx-10">
-        <table className="min-w-full bg-gray-100 rounded-lg">
-          <thead>
-            <tr className="bg-gray-300 text-left text-gray-700">
-              <th className="py-3 px-4 font-semibold">ID</th>
-              <th className="py-3 px-4 font-semibold">Nombre</th>
-              <th className="py-3 px-4 font-semibold">Descripción</th>
-              <th className="py-3 px-4 font-semibold">Cantidad</th>
-              <th className="py-3 px-4 font-semibold">Valor Unit</th>
-              <th className="py-3 px-4 font-semibold">Total</th>
-              <th className="py-3 px-4 font-semibold">Acciones</th>
-            </tr>
-          </thead>
-          <tbody ref={parent}>
-            {data.map((item, index) => (
-              <tr key={index} className="border-b border-gray-300">
-                <td className="py-3 px-4">{item.productId}</td>
-                <td className="py-3 px-4 font-semibold">{item.productName}</td>
-                <td className="py-3 px-4">{item.productDescription}</td>
-                <td className="py-3 px-4">{item.cantidad}</td>
-                <td className="py-3 px-4">
-                  ${item.productPrice.toLocaleString()}
-                </td>
-                <td className="py-3 px-4">${item.total.toLocaleString()}</td>
-                <td className="py-3 px-4">
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleRemoveProduct(index)}
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-row justify-end mt-10 mr-10">
-        <div className="flex flex-col justify-end mx-10 my-5">
-          {/* Subtotal */}
-          <div className="flex flex-col items-center mt-10">
-            <div className="flex flex-row justify-between w-full max-w-md">
-              <p className="font-semibold text-lg text-blue-500">Subtotal:</p>
-              <p className="font-semibold text-lg">
-                {formatCurrency(subtotal)}
-              </p>
-            </div>
-          </div>
-
-          {/* Descuento */}
-          <div className="flex flex-col items-center mt-2">
-            <div className="flex flex-row justify-between w-full max-w-md">
-              <p className="font-semibold text-lg text-blue-500">Descuento:</p>
-              <p className="font-semibold text-lg">
-                {formatCurrency(DESCUENTO)}
-              </p>
-            </div>
-          </div>
-
-          {/* IVA */}
-          <div className="flex flex-col items-center mt-2">
-            <div className="flex flex-row justify-between w-full max-w-md">
-              <p className="font-semibold text-lg text-blue-500">IVA:</p>
-              <p className="font-semibold text-lg">{formatCurrency(iva)}</p>
-            </div>
-          </div>
-
-          {/* Total */}
-          <div className="flex flex-col items-center mt-2">
-            <div className="flex flex-row justify-between w-full max-w-md">
-              <p className="font-semibold text-lg text-blue-500">Total:</p>
-              <p className="font-semibold text-lg">{formatCurrency(total)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-row justify-between mx-10">
-        <button
-          type="button"
-          onClick={handleRemoveAllProducts}
-          className="text-gray-900 my-5 bg-gradient-to-r from-red-200 via-red-400 to-red-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex items-center"
-        >
-          <FaTrashAlt className="mr-2" />
-          Limpiar
-        </button>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              // Espera a que `handleSaveOrder` se complete
-              const success = await handleSaveOrder(
-                buyerSesionId,
-                userSesionId
-              );
-
-              // Si `handleSaveOrder` devuelve éxito, muestra el Swal
-              if (success) {
-                Swal.fire({
-                  title: "Venta confirmada",
-                  text: "La venta ha sido confirmada exitosamente.",
-                  icon: "success",
-                  confirmButtonText: "Aceptar",
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    handleRemoveAllProducts(); // Llama a `handleRemoveAllProducts` si el usuario confirma
-                  }
-                });
-              } else {
-                // Si `handleSaveOrder` falla, muestra un error
-                Swal.fire({
-                  title: "Error",
-                  text: "Ocurrió un error al guardar la venta.",
-                  icon: "error",
-                  confirmButtonText: "Aceptar",
-                });
-              }
-            } catch (error) {
-              // Puedes manejar cualquier error aquí si `handleSaveOrder` falla
-              console.error("Error al guardar la venta:", error);
-            }
-          }}
-          className="text-gray-900 my-5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-        >
-          Confirmar venta
-        </button>
       </div>
     </>
   );

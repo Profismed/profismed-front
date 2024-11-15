@@ -5,8 +5,8 @@ import Swal from "sweetalert2";
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState("login");
-  const [email, setEmail] = useState("janedoe@example.com");
-  const [password, setPassword] = useState("anotherSecurePassword456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
