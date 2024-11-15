@@ -6,6 +6,10 @@ import Swal from "sweetalert2";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [actualId, setActualId] = useState("");
@@ -24,6 +28,7 @@ const Productos = () => {
 
   // Realizar la petición fetch a la API de productos
   const fetchProductos = async () => {
+    // Fetch de productos como ya lo tienes
     const requestOptions = {
       method: "GET",
       credentials: "include",
@@ -37,14 +42,13 @@ const Productos = () => {
       const data = await response.json();
       if (Array.isArray(data)) {
         setProductos(data);
-      } else {
-        console.error("La respuesta no es un array de productos", data);
-        setProductos([]);
+        setFilteredProducts(data); // Inicializar productos filtrados
       }
     } catch (error) {
       console.error("Error al obtener los productos:", error);
     }
   };
+
   useEffect(() => {
     fetchProductos();
   }, []);
@@ -77,9 +81,6 @@ const Productos = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        console.log(data);
-        console.log(raw);
-
         // setProductos([...productos, data]);
         fetchProductos();
         setIsModalOpen(false);
@@ -137,8 +138,6 @@ const Productos = () => {
 
       const raw = JSON.stringify(filteredProductData);
 
-      console.log(raw);
-
       const requestOptions = {
         method: "PUT",
         body: raw,
@@ -155,7 +154,6 @@ const Productos = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        console.log(data);
         fetchProductos();
       } else {
         console.error("Error al editar el producto:", data);
@@ -180,6 +178,45 @@ const Productos = () => {
 
   const closeModalEdit = () => {
     setIsModalEditOpen(false);
+    setEditProductDescription("");
+    setEditProductName("");
+    setEditProductPrice("");
+    setEditQuantity("");
+    setEditProviderId("");
+  };
+
+  // Manejar cambios en el término de búsqueda
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    filterProducts(term, selectedProvider);
+  };
+
+  // Manejar cambios en el proveedor seleccionado
+  const handleProviderChange = (e) => {
+    const provider = e.target.value;
+    setSelectedProvider(provider);
+    filterProducts(searchTerm, provider);
+  };
+
+  // Función para filtrar productos
+  const filterProducts = (term, userId) => {
+    // Filtrado basado en userId y term
+    const filtered = productos.filter((producto) => {
+      if (userId) {
+        // Si userId tiene un valor, filtra solo los productos que coincidan con ese userId
+
+        return producto.userId === parseInt(userId, 10);
+      } else if (term) {
+        // Si userId está vacío pero term tiene un valor, filtra los productos que contengan el texto de term en el nombre
+
+        return producto.productName.toLowerCase().includes(term.toLowerCase());
+      }
+      // Si ambos userId y term están vacíos, muestra todos los productos
+      return true;
+    });
+
+    setFilteredProducts(filtered);
   };
 
   return (
@@ -193,20 +230,27 @@ const Productos = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row justify-end space-x-8 items-center mb-4">
-          <select className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-            <option selected>Categoría</option>
-            <option value="category1">Categoría 1</option>
-            <option value="category2">Categoría 2</option>
+          <select
+            className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            value={selectedProvider}
+            onChange={handleProviderChange}
+          >
+            <option value="">Todos los Proveedores</option>
+            {/* Añadir opciones de proveedores según tus datos */}
+            <option value="1">Proveedor 1</option>
+            <option value="2">Proveedor 2</option>
           </select>
           <TextInput
             className="w-full sm:w-44 mb-2 sm:mb-0"
-            placeholder="Buscar"
+            placeholder="Buscar por nombre"
             icon={HiSearch}
+            value={searchTerm}
+            onChange={handleSearchChange}
           />
         </div>
 
         <div className="relative overflow-x-auto">
-          {productos.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -228,7 +272,7 @@ const Productos = () => {
                 </tr>
               </thead>
               <tbody>
-                {productos.map((producto, index) => (
+                {filteredProducts.map((producto, index) => (
                   <tr
                     key={index}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
@@ -411,50 +455,61 @@ const Productos = () => {
         <Modal.Body>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <TextInput
-              label="Nombres"
-              // placeholder={
-              //   productos.find((producto) => producto.userId === actualId)
-              //     ?.firstName
-              // }
+              label="Nombre"
+              placeholder={
+                productos.find((producto) => producto.productId === actualId)
+                  ?.productName
+              }
               className="w-full"
-              onBlur={(e) => setEditProductName(e.target.value)}
+              onBlur={(e) => {
+                setEditProductName(e.target.value);
+              }}
             />
             <TextInput
-              label="Apellidos"
-              // placeholder={
-              //   personas.find((persona) => persona.userId === actualId)
-              //     ?.lastName
-              // }
+              label="Descripción"
+              placeholder={
+                productos.find((producto) => producto.productId === actualId)
+                  ?.productDescription
+              }
+              className="w-full"
+              onBlur={(e) => setEditProductDescription(e.target.value)}
+            />
+            <TextInput
+              label="Precio del producto"
+              placeholder={
+                productos.find((producto) => producto.productId === actualId)
+                  ?.productPrice
+              }
               className="w-full"
               onBlur={(e) => setEditProductPrice(e.target.value)}
             />
             <TextInput
-              label="username"
-              // placeholder={
-              //   personas.find((persona) => persona.userId === actualId)
-              //     ?.username
-              // }
+              label="Cantidad"
+              placeholder={
+                productos.find((producto) => producto.productId === actualId)
+                  ?.quantity
+              }
               className="w-full"
               onBlur={(e) => setEditQuantity(e.target.value)}
             />
-          
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <Select
-              label="Rol"
-              // value={
-              //   editRoleId || // Si el estado `editRoleId` ha sido editado, lo usamos
-              //   personas.find((persona) => persona.userId === actualId)
-              //     ?.roleId ||
-              //   "" // Usamos el valor de roleId directamente
-              // }
+              label="Provedor"
+              value={
+                editProviderId || // Si `editUserId` tiene un valor, lo usamos
+                productos.find((producto) => producto.productId === actualId)
+                  ?.userId || // Si no, usamos el `userId` del producto actual
+                "" // Si ninguno de los anteriores tiene valor, usamos una cadena vacía
+              }
               className="w-full"
-              onChange={(e) => setEditProviderId(e.target.value)} // Actualizamos el estado con el valor de la opción seleccionada
+              onChange={(e) => {
+                setEditProviderId(e.target.value);
+              }} // Actualizamos el estado con el valor de la opción seleccionada
             >
-              <option value="2">Vendedor</option>
-              <option value="3">Cliente</option>
-              <option value="4">Proveedor</option>
-              <option value="5">Contacto</option>
+              <option value="1">provedor 1</option>
+              <option value="2">provedor 2</option>
+              <option value="3">Provedor 3</option>
+              <option value="4">Provedor 4</option>
             </Select>
           </div>
         </Modal.Body>

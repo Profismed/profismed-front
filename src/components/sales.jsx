@@ -197,29 +197,26 @@ const Sales = () => {
         "Content-Type": "application/json",
       },
     };
-    console.log(raw, "❤️");
 
     try {
       const response = await fetch(
         "https://profismedsgi.onrender.com/api/sales/create",
         requestOptions
       );
-    
+
       let result;
       if (!response.ok) {
         try {
           result = await response.json(); // Intenta leer el JSON de error
-          console.log("Error message from server:", result.message || result); // Muestra el mensaje o el JSON completo
         } catch (jsonError) {
           console.error("Failed to parse JSON error response:", jsonError);
           result = await response.text(); // Si el JSON falla, intenta leer como texto
-          console.log("Error message as text:", result);
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       } else {
         result = await response.json(); // Si la respuesta es exitosa, analiza el JSON normalmente
       }
-    
+
       setData(Array.isArray(result) ? result : []);
       // Actualiza el estado con la respuesta del servidor
       return true; // Devuelve `true` si la venta se guardó correctamente
@@ -241,8 +238,6 @@ const Sales = () => {
   }
 
   function handleRemoveProduct(index) {
-    console.log(index);
-    console.log(data);
     setData(data.filter((_, i) => i !== index)); // Filtra los elementos que no coinciden con el índice
   }
 
@@ -272,11 +267,6 @@ const Sales = () => {
   const iva = calculateIVA(subtotal);
   const total = calculateTotal(subtotal, iva, DESCUENTO);
 
-
-  console.log(data);
-  console.log(calculateSubtotal());
-  
-  
   return (
     <>
       <div className="flex flex-col ml-10 max-w-sm mx-auto">
@@ -442,8 +432,11 @@ const Sales = () => {
           onClick={async () => {
             try {
               // Espera a que `handleSaveOrder` se complete
-              const success = await handleSaveOrder(buyerSesionId, userSesionId);
-          
+              const success = await handleSaveOrder(
+                buyerSesionId,
+                userSesionId
+              );
+
               // Si `handleSaveOrder` devuelve éxito, muestra el Swal
               if (success) {
                 Swal.fire({
@@ -470,7 +463,6 @@ const Sales = () => {
               console.error("Error al guardar la venta:", error);
             }
           }}
-          
           className="text-gray-900 my-5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
         >
           Confirmar venta
