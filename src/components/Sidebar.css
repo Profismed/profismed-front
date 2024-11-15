@@ -1,33 +1,33 @@
 /* .app-container {
     display: flex;
-  }
+}
   
-  .sidebar {
+.sidebar {
     width: 200px;
     background-color: #333;
     color: #fff;
     min-height: 100vh;
     padding-top: 20px;
-  }
+}
   
-  .sidebar ul {
+.sidebar ul {
     list-style: none;
     padding: 0;
-  }
+}
   
-  .sidebar ul li {
+.sidebar ul li {
     margin: 20px 0;
-  }
+}
   
-  .sidebar ul li a {
+.sidebar ul li a {
     color: white;
     text-decoration: none;
     display: flex;
     align-items: center;
-  }
+}
   
-  .content {
+.content {
     flex-grow: 1;
     padding: 20px;
-  }
-   */
+}
+*/
