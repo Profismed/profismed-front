@@ -121,6 +121,24 @@ const Sales = () => {
     const nombre = document.getElementById("products").value;
     const cantidad = parseInt(document.getElementById("quantity").value, 10);
 
+    if (!nombre || nombre === "Selecione un producto") {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Por favor, selecciona un producto.",
+      });
+      return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Por favor, ingresa una cantidad válida.",
+      });
+      return;
+    }
+
     const producto = productos.find(
       (producto) => producto.productId === parseInt(nombre, 10)
     );
@@ -153,6 +171,10 @@ const Sales = () => {
           },
         ]);
       }
+
+      // Limpiar los campos después de agregar el producto
+      document.getElementById("products").selectedIndex = 0;
+      document.getElementById("quantity").value = "";
     }
   }
 
@@ -175,32 +197,39 @@ const Sales = () => {
         "Content-Type": "application/json",
       },
     };
+    console.log(raw, "❤️");
 
     try {
       const response = await fetch(
         "https://profismedsgi.onrender.com/api/sales/create",
         requestOptions
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Verifica si la respuesta es JSON antes de parsearla
-      const text = await response.text();
+    
       let result;
-      try {
-        result = JSON.parse(text);
-      } catch {
-        result = text; // Si no es JSON, simplemente guarda el texto
+      if (!response.ok) {
+        try {
+          result = await response.json(); // Intenta leer el JSON de error
+          console.log("Error message from server:", result.message || result); // Muestra el mensaje o el JSON completo
+        } catch (jsonError) {
+          console.error("Failed to parse JSON error response:", jsonError);
+          result = await response.text(); // Si el JSON falla, intenta leer como texto
+          console.log("Error message as text:", result);
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      } else {
+        result = await response.json(); // Si la respuesta es exitosa, analiza el JSON normalmente
       }
-
-      setData([]);
+    
+      setData(Array.isArray(result) ? result : []);
+      // Actualiza el estado con la respuesta del servidor
+      return true; // Devuelve `true` si la venta se guardó correctamente
     } catch (error) {
       console.error("An error occurred during order creation", error);
+      return false; // Devuelve `false` si la venta falló
     }
   };
 
+  // Función para limpiar todos los productos
   function handleRemoveAllProducts() {
     setData([]);
     const persons = document.getElementById("clients");
@@ -212,14 +241,16 @@ const Sales = () => {
   }
 
   function handleRemoveProduct(index) {
-    setData(data.filter((_, i) => i !== index));
+    console.log(index);
+    console.log(data);
+    setData(data.filter((_, i) => i !== index)); // Filtra los elementos que no coinciden con el índice
   }
 
   const IVA_RATE = 0.19; // 19% de IVA
   const DESCUENTO = 0; // Puedes ajustar el descuento aquí
 
   const calculateSubtotal = () => {
-    return data.reduce((acc, item) => acc + (item.total || 0), 0);
+    return data.reduce((acc, item) => acc + (item.total || 0), 0); // Suma todos los totales
   };
 
   const calculateIVA = (subtotal) => {
@@ -241,6 +272,11 @@ const Sales = () => {
   const iva = calculateIVA(subtotal);
   const total = calculateTotal(subtotal, iva, DESCUENTO);
 
+
+  console.log(data);
+  console.log(calculateSubtotal());
+  
+  
   return (
     <>
       <div className="flex flex-col ml-10 max-w-sm mx-auto">
@@ -257,12 +293,14 @@ const Sales = () => {
             setBuyerSesionId(event.target.value);
           }}
         >
-          <option selected>Selecione un cliente</option>
-          {personas.map((persona) => (
-            <option key={persona.userId} value={persona.userId}>
-              {persona.firstName}
-            </option>
-          ))}
+          <option selected>Seleccione un cliente</option>
+          {personas
+            .filter((persona) => persona.roleId === 3) // Filtramos para que solo queden las personas con userId 3
+            .map((persona) => (
+              <option key={persona.userId} value={persona.userId}>
+                {persona.firstName}
+              </option>
+            ))}
         </select>
         {/*<p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>*/}
       </div>
@@ -401,19 +439,38 @@ const Sales = () => {
         </button>
         <button
           type="button"
-          onClick={() => {
-            Swal.fire({
-              title: "Venta confirmada",
-              text: "La venta ha sido confirmada exitosamente.",
-              icon: "success",
-              confirmButtonText: "Aceptar",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                handleSaveOrder(buyerSesionId, userSesionId);
-                handleRemoveAllProducts();
+          onClick={async () => {
+            try {
+              // Espera a que `handleSaveOrder` se complete
+              const success = await handleSaveOrder(buyerSesionId, userSesionId);
+          
+              // Si `handleSaveOrder` devuelve éxito, muestra el Swal
+              if (success) {
+                Swal.fire({
+                  title: "Venta confirmada",
+                  text: "La venta ha sido confirmada exitosamente.",
+                  icon: "success",
+                  confirmButtonText: "Aceptar",
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    handleRemoveAllProducts(); // Llama a `handleRemoveAllProducts` si el usuario confirma
+                  }
+                });
+              } else {
+                // Si `handleSaveOrder` falla, muestra un error
+                Swal.fire({
+                  title: "Error",
+                  text: "Ocurrió un error al guardar la venta.",
+                  icon: "error",
+                  confirmButtonText: "Aceptar",
+                });
               }
-            });
+            } catch (error) {
+              // Puedes manejar cualquier error aquí si `handleSaveOrder` falla
+              console.error("Error al guardar la venta:", error);
+            }
           }}
+          
           className="text-gray-900 my-5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
         >
           Confirmar venta

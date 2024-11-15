@@ -7,32 +7,45 @@ import Swal from "sweetalert2";
 const Productos = () => {
   const [productos, setProductos] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalEditOpen, setIsModalEditOpen] = useState(false);
+  const [actualId, setActualId] = useState("");
 
-  useEffect(() => {
-    // Realizar la petición fetch a la API de productos
-    const fetchProductos = async () => {
-      const requestOptions = {
-        method: "GET",
-        credentials: "include",
-        redirect: "follow",
-      };
-      try {
-        const response = await fetch(
-          "https://profismedsgi.onrender.com/api/products/all",
-          requestOptions
-        );
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setProductos(data);
-        } else {
-          console.error("La respuesta no es un array de productos", data);
-          setProductos([]);
-        }
-      } catch (error) {
-        console.error("Error al obtener los productos:", error);
-      }
+  const [productNameNew, setProductNameNew] = useState("");
+  const [productDescriptionNew, setProductDescriptionNew] = useState("");
+  const [productPriceNew, setProductPriceNew] = useState("");
+  const [quantityNew, setQuantityNew] = useState("");
+  const [providerId, setProviderId] = useState("");
+
+  const [editProductName, setEditProductName] = useState("");
+  const [editProductDescription, setEditProductDescription] = useState("");
+  const [editProductPrice, setEditProductPrice] = useState("");
+  const [editQuantity, setEditQuantity] = useState("");
+  const [editProviderId, setEditProviderId] = useState("");
+
+  // Realizar la petición fetch a la API de productos
+  const fetchProductos = async () => {
+    const requestOptions = {
+      method: "GET",
+      credentials: "include",
+      redirect: "follow",
     };
-
+    try {
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/products/all",
+        requestOptions
+      );
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setProductos(data);
+      } else {
+        console.error("La respuesta no es un array de productos", data);
+        setProductos([]);
+      }
+    } catch (error) {
+      console.error("Error al obtener los productos:", error);
+    }
+  };
+  useEffect(() => {
     fetchProductos();
   }, []);
 
@@ -41,11 +54,11 @@ const Productos = () => {
 
     try {
       const raw = JSON.stringify({
-        productName: "aunmasmildepanpruebaintegracion1",
-        productDescription: "Descripción detallada del pan",
-        productPrice: 300,
-        quantity: 50,
-        userId: 1,
+        productName: productNameNew,
+        productDescription: productDescriptionNew,
+        productPrice: productPriceNew,
+        quantity: quantityNew,
+        userId: providerId,
       });
 
       const requestOptions = {
@@ -64,14 +77,91 @@ const Productos = () => {
       );
       const data = await response.json();
       if (response.ok) {
-       
-        setProductos([...productos, data]);
+        console.log(data);
+        console.log(raw);
+
+        // setProductos([...productos, data]);
+        fetchProductos();
         setIsModalOpen(false);
       } else {
         console.error("Error al crear el producto:", data);
       }
     } catch (error) {
       console.error("Error al crear el producto:", error);
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    // Realizar la petición fetch a la API para eliminar un producto
+    try {
+      const requestOptions = {
+        method: "DELETE",
+        credentials: "include",
+        redirect: "follow",
+      };
+
+      const response = await fetch(
+        `https://profismedsgi.onrender.com/api/products/delete/${productId}`,
+        requestOptions
+      );
+      if (response.ok) {
+        const updatedProducts = productos.filter(
+          (producto) => producto.productId !== productId
+        );
+        setProductos(updatedProducts);
+      } else {
+        console.error("Error al eliminar el producto:", response.status);
+      }
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error);
+    }
+  };
+
+  const handleEditProduct = async (productId) => {
+    // Realizar la petición fetch a la API para editar un producto
+    try {
+      const productData = {
+        productName: editProductName,
+        productDescription: editProductDescription,
+        productPrice: editProductPrice,
+        quantity: editQuantity,
+        userId: editProviderId,
+      };
+
+      // Filtrar propiedades vacías o undefined
+      const filteredProductData = Object.fromEntries(
+        Object.entries(productData).filter(
+          ([key, value]) => value !== undefined && value !== ""
+        )
+      );
+
+      const raw = JSON.stringify(filteredProductData);
+
+      console.log(raw);
+
+      const requestOptions = {
+        method: "PUT",
+        body: raw,
+        credentials: "include",
+        redirect: "follow",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await fetch(
+        `https://profismedsgi.onrender.com/api/products/update/${productId}`,
+        requestOptions
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log(data);
+        fetchProductos();
+      } else {
+        console.error("Error al editar el producto:", data);
+      }
+    } catch (error) {
+      console.error("Error al editar el producto:", error);
     }
   };
 
@@ -82,7 +172,16 @@ const Productos = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
- 
+
+  const openModalEdit = (id) => {
+    setIsModalEditOpen(true);
+    setActualId(id);
+  };
+
+  const closeModalEdit = () => {
+    setIsModalEditOpen(false);
+  };
+
   return (
     <>
       <div className="w-full min-h-screen px-4">
@@ -144,7 +243,14 @@ const Productos = () => {
                     <td className="px-6 py-4">{producto.quantity}</td>
                     <td className="px-6 py-4">{producto.productPrice}</td>
                     <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
-                      <button className="text-blue-500 text-xl">✏️</button>
+                      <button
+                        onClick={() => {
+                          openModalEdit(producto.productId);
+                        }}
+                        className="text-blue-500 text-xl"
+                      >
+                        ✏️
+                      </button>
                       <button
                         className="text-red-500 text-xl"
                         onClick={() => {
@@ -159,6 +265,7 @@ const Productos = () => {
                             cancelButtonText: "Cancelar",
                           }).then((result) => {
                             if (result.isConfirmed) {
+                              handleDeleteProduct(producto.productId);
                               Swal.fire(
                                 "¡Eliminado!",
                                 "El producto ha sido eliminado.",
@@ -233,7 +340,7 @@ const Productos = () => {
         </div>
       </div>
 
-      {/* Modal de Flowbite */}
+      {/* Modal de crear producto */}
       <Modal show={isModalOpen} onClose={closeModal}>
         <Modal.Header>Añadir Producto</Modal.Header>
         <Modal.Body>
@@ -242,29 +349,37 @@ const Productos = () => {
               label="Nombre"
               placeholder="Nombre del producto"
               className="w-full"
+              onChange={(e) => setProductNameNew(e.target.value)}
             />
             <TextInput
               label="Descripción"
               placeholder="Descripción"
               className="w-full"
+              onChange={(e) => setProductDescriptionNew(e.target.value)}
             />
-            <TextInput label="Precio" placeholder="Precio" className="w-full" />
+            <TextInput
+              label="Precio"
+              placeholder="Precio"
+              className="w-full"
+              onChange={(e) => setProductPriceNew(e.target.value)}
+            />
             <TextInput
               label="Cantidad"
               placeholder="Cantidad"
               className="w-full"
+              onChange={(e) => setQuantityNew(e.target.value)}
             />
 
             <Select
               label="provedor Id"
               placeholder="Seleccione una opción"
               className="w-full col-span-2"
-              // onChange={(e) => setEditDocumentId(e.target.selectedIndex)}
+              onChange={(e) => setProviderId(e.target.value)}
             >
-              <option value="CC">Selecciona un proveedor</option>
-              <option value="TI">provedor 1</option>
-              <option value="CE">proveedor 2</option>
-              <option value="PA">proveedor 3</option>
+              <option value="">Selecciona un proveedor</option>
+              <option value="1">provedor 1</option>
+              <option value="2">proveedor 2</option>
+              <option value="3">proveedor 3</option>
             </Select>
           </div>
         </Modal.Body>
@@ -284,6 +399,82 @@ const Productos = () => {
               className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
             >
               Añadir
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal de editar producto */}
+
+      <Modal show={isModalEditOpen} onClose={closeModalEdit}>
+        <Modal.Header>Editar Producto </Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextInput
+              label="Nombres"
+              // placeholder={
+              //   productos.find((producto) => producto.userId === actualId)
+              //     ?.firstName
+              // }
+              className="w-full"
+              onBlur={(e) => setEditProductName(e.target.value)}
+            />
+            <TextInput
+              label="Apellidos"
+              // placeholder={
+              //   personas.find((persona) => persona.userId === actualId)
+              //     ?.lastName
+              // }
+              className="w-full"
+              onBlur={(e) => setEditProductPrice(e.target.value)}
+            />
+            <TextInput
+              label="username"
+              // placeholder={
+              //   personas.find((persona) => persona.userId === actualId)
+              //     ?.username
+              // }
+              className="w-full"
+              onBlur={(e) => setEditQuantity(e.target.value)}
+            />
+          
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Rol"
+              // value={
+              //   editRoleId || // Si el estado `editRoleId` ha sido editado, lo usamos
+              //   personas.find((persona) => persona.userId === actualId)
+              //     ?.roleId ||
+              //   "" // Usamos el valor de roleId directamente
+              // }
+              className="w-full"
+              onChange={(e) => setEditProviderId(e.target.value)} // Actualizamos el estado con el valor de la opción seleccionada
+            >
+              <option value="2">Vendedor</option>
+              <option value="3">Cliente</option>
+              <option value="4">Proveedor</option>
+              <option value="5">Contacto</option>
+            </Select>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="flex flex-row justify-around space-x-10 mx-24">
+            <Button
+              className="bg-red-500 hover:bg-red-800 px-10"
+              onClick={closeModalEdit}
+            >
+              <p className="text-lg">Cancelar</p>
+            </Button>
+            <button
+              onClick={() => {
+                handleEditProduct(actualId);
+
+                closeModalEdit();
+              }}
+              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+            >
+              Editar
             </button>
           </div>
         </Modal.Footer>
