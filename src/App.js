@@ -1,8 +1,7 @@
-import React from 'react';
-import { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import  Banner  from './components/Banner'; 
+import Banner from './components/Banner'; 
 import LandingPage from './components/LandingPage';
 import Products from './components/Products';
 import Reports from './components/Reports';
@@ -14,22 +13,20 @@ function App() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Definir las rutas donde el banner debería aparecer
-  const showBannerRoutes = ['/LandingPage', '/products', '/Reports', '/Ventas'];
+  // Define the routes where the Banner should appear
+  const showBannerRoutes = ['/landingpage', '/products', '/reports', '/ventas'];
 
+  // Determine whether to show Sidebar and Banner
+  const isLoginPage = location.pathname === '/';
+  const showBanner = showBannerRoutes.includes(location.pathname.toLowerCase());
+  
   return (
-    <div className=" bg-blue-100">
-      {/* Mostrar el Banner si estamos en una de las rutas definidas */}
-      {showBannerRoutes.includes(location.pathname) && <Banner />}
-      
-      {/* Mostrar el Sidebar si no estamos en la ruta '/' */}
-      {location.pathname !== '/' && <Sidebar />}
+    <div className="bg-blue-100">
+      {/* Conditional Banner */}
+      {showBanner && <Banner />}
 
-
-
-      <div className={location.pathname === '/' ? '' : 'pt-10 px-4 sm:ml-64 bg-blue-100  '}>
-        
-      {location.pathname !== '/' && (
+      {/* Conditional Sidebar */}
+      {!isLoginPage && (
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           isMobileOpen={isMobileOpen}
@@ -37,19 +34,24 @@ function App() {
           toggleMobileSidebar={() => setIsMobileOpen(!isMobileOpen)}
         />
       )}
-        
+
+      {/* Main Content */}
+      <div className={!isLoginPage ? 'pt-10 px-4 sm:ml-64 bg-blue-100' : ''}>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/LandingPage" element={<LandingPage />} />
+          <Route path="/landingpage" element={<LandingPage />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/Reports" element={<Reports />} />
-          <Route path='/Ventas' element={<Sales/>} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/ventas" element={<Sales />} />
+          {/* Catch-All Route */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </div>
   );
 }
 
+// App Wrapper for Router Context
 export default function AppWrapper() {
   return (
     <Router>
