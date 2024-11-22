@@ -5,6 +5,7 @@ import { Modal, Button, Select, Pagination } from "flowbite-react";
 import Swal from "sweetalert2";
 
 const Productos = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [productos, setProductos] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -192,50 +193,87 @@ const Productos = () => {
   };
 
   const handleEditProduct = async (productId) => {
-    // Realizar la petición fetch a la API para editar un producto
-    try {
-      const productData = {
-        productName: editProductName,
-        productDescription: editProductDescription,
-        productPrice: editProductPrice,
-        quantity: editQuantity,
-        userId: editProviderId,
-      };
-
-      // Filtrar propiedades vacías o undefined
-      const filteredProductData = Object.fromEntries(
-        Object.entries(productData).filter(
-          ([key, value]) => value !== undefined && value !== ""
-        )
-      );
-
-      const raw = JSON.stringify(filteredProductData);
-
-      const requestOptions = {
-        method: "PUT",
-        body: raw,
-        credentials: "include",
-        redirect: "follow",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      const response = await fetch(
-        `https://profismedsgi.onrender.com/api/products/update/${productId}`,
-        requestOptions
-      );
-      const data = await response.json();
-      if (response.ok) {
-        fetchProductos();
-      } else {
-        console.error("Error al editar el producto:", data);
-      }
-    } catch (error) {
-      console.error("Error al editar el producto:", error);
-    }
+  // Validate all fields
+  const newEditErrors = {
+    productName: editProductName ? validateName(editProductName) : "",
+    productDescription: editProductDescription ? validateDescription(editProductDescription) : "",
+    productPrice: editProductPrice ? validatePrice(editProductPrice) : "",
+    quantity: editQuantity ? validateQuantity(editQuantity) : "",
+    providerId: editProviderId ? validateProviderId(editProviderId) : ""
   };
 
+  setEditErrors(newEditErrors);
+
+  // Check if there are any errors
+  if (Object.values(newEditErrors).some(error => error !== "")) {
+    return; // Stop the submission if there are errors
+  }
+
+  setIsLoading(true);
+
+  try {
+    const productData = {
+      productName: editProductName,
+      productDescription: editProductDescription,
+      productPrice: editProductPrice,
+      quantity: editQuantity,
+      userId: editProviderId,
+    };
+
+    // Filtrar propiedades vacías o undefined
+    const filteredProductData = Object.fromEntries(
+      Object.entries(productData).filter(
+        ([key, value]) => value !== undefined && value !== ""
+      )
+    );
+
+    const raw = JSON.stringify(filteredProductData);
+
+    const requestOptions = {
+      method: "PUT",
+      body: raw,
+      credentials: "include",
+      redirect: "follow",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    const response = await fetch(
+      `https://profismedsgi.onrender.com/api/products/update/${productId}`,
+      requestOptions
+    );
+    const data = await response.json();
+    if (response.ok) {
+      fetchProductos();
+      closeModalEdit();
+      Swal.fire({
+        icon: 'success',
+        title: '¡Producto modificado!',
+        text: 'El producto ha sido actualizado correctamente.',
+        confirmButtonColor: '#7747FF'
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo modificar el producto.',
+        confirmButtonColor: '#7747FF'
+      });
+      console.error("Error al editar el producto:", data);
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Ocurrió un error al modificar el producto.',
+      confirmButtonColor: '#7747FF'
+    });
+    console.error("Error al editar el producto:", error);
+  } finally {
+      setIsLoading(false);
+    }
+};
    // Calcular los productos a mostrar en la página actual
    const indexOfLastProduct = currentPage * productsPerPage;
    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -527,10 +565,11 @@ const Productos = () => {
               onClick={() => {
                 handleEditProduct(actualId);
               }}
-              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+              disabled={isLoading}
+              className={`inline-block py-2 px-6 rounded-l-xl rounded-t-xl ${isLoading ? 'bg-gray-400' : 'bg-[#7747FF] hover:bg-white hover:text-[#7747FF]'} text-gray-50 font-bold leading-loose transition duration-200`}
             >
-              Editar
-            </button>
+              {isLoading ? 'Editando...' : 'Editar'}
+            </button>          
           </div>
         </Modal.Footer>
       </Modal>
