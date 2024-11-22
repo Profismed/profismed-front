@@ -9,25 +9,78 @@ const Productos = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("");
-
-  const [currentPage, setCurrentPage] = useState(1); // Página actual
-  const [productsPerPage] = useState(10); // Cantidad de productos por página
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [actualId, setActualId] = useState("");
 
+  // Form fields state
   const [productNameNew, setProductNameNew] = useState("");
   const [productDescriptionNew, setProductDescriptionNew] = useState("");
   const [productPriceNew, setProductPriceNew] = useState("");
   const [quantityNew, setQuantityNew] = useState("");
   const [providerId, setProviderId] = useState("");
 
+  // Edit form fields state
   const [editProductName, setEditProductName] = useState("");
   const [editProductDescription, setEditProductDescription] = useState("");
   const [editProductPrice, setEditProductPrice] = useState("");
   const [editQuantity, setEditQuantity] = useState("");
   const [editProviderId, setEditProviderId] = useState("");
+
+  // Validation errors state
+  const [errors, setErrors] = useState({
+    productName: "",
+    productDescription: "",
+    productPrice: "",
+    quantity: "",
+    providerId: ""
+  });
+
+  // Edit form validation errors state
+  const [editErrors, setEditErrors] = useState({
+    productName: "",
+    productDescription: "",
+    productPrice: "",
+    quantity: "",
+    providerId: ""
+  });
+
+  // Validation functions
+  const validatePrice = (price) => {
+    const numberRegex = /^\d+(\.\d{1,2})?$/;
+    if (!price) return "El precio es requerido";
+    if (!numberRegex.test(price)) return "El precio debe ser un número válido con hasta 2 decimales";
+    if (parseFloat(price) <= 0) return "El precio debe ser mayor que 0";
+    return "";
+  };
+
+  const validateQuantity = (quantity) => {
+    const numberRegex = /^\d+$/;
+    if (!quantity) return "La cantidad es requerida";
+    if (!numberRegex.test(quantity)) return "La cantidad debe ser un número entero";
+    if (parseInt(quantity) < 0) return "La cantidad no puede ser negativa";
+    return "";
+  };
+
+  const validateName = (name) => {
+    if (!name.trim()) return "El nombre es requerido";
+    if (name.length < 3) return "El nombre debe tener al menos 3 caracteres";
+    if (name.length > 50) return "El nombre debe tener máximo 50 caracteres";
+    return "";
+  };
+
+  const validateDescription = (description) => {
+    if (!description.trim()) return "La descripción es requerida";
+    if (description.length > 200) return "La descripción debe tener máximo 200 caracteres";
+    return "";
+  };
+
+  const validateProviderId = (id) => {
+    if (!id) return "El proveedor es requerido";
+    return "";
+  };
 
   // Realizar la petición fetch a la API de productos
   const fetchProductos = async () => {
@@ -56,8 +109,23 @@ const Productos = () => {
     fetchProductos();
   }, []);
 
+  // Handle create form validation
   const handleCreateProduct = async () => {
-    // Realizar la petición fetch a la API para crear un producto
+    // Validate all fields
+    const newErrors = {
+      productName: validateName(productNameNew),
+      productDescription: validateDescription(productDescriptionNew),
+      productPrice: validatePrice(productPriceNew),
+      quantity: validateQuantity(quantityNew),
+      providerId: validateProviderId(providerId)
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any errors
+    if (Object.values(newErrors).some(error => error !== "")) {
+      return; // Stop the submission if there are errors
+    }
 
     try {
       const raw = JSON.stringify({
@@ -84,9 +152,9 @@ const Productos = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        // setProductos([...productos, data]);
         fetchProductos();
         setIsModalOpen(false);
+        clearCreateForm();
       } else {
         console.error("Error al crear el producto:", data);
       }
@@ -173,6 +241,22 @@ const Productos = () => {
    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
  
+  // Clear form and errors
+  const clearCreateForm = () => {
+    setProductNameNew("");
+    setProductDescriptionNew("");
+    setProductPriceNew("");
+    setQuantityNew("");
+    setProviderId("");
+    setErrors({
+      productName: "",
+      productDescription: "",
+      productPrice: "",
+      quantity: "",
+      providerId: ""
+    });
+  };
+
    // Cambiar de página
    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -231,10 +315,227 @@ const Productos = () => {
     });
 
     setFilteredProducts(filtered);
-  };
-
+  };  
   return (
     <>
+      {/* Your existing JSX */}
+      
+      {/* Modal de crear producto with validation */}
+      <Modal show={isModalOpen} onClose={() => { closeModal(); clearCreateForm(); }}>
+        <Modal.Header>Añadir Producto</Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <TextInput
+                label="Nombre"
+                placeholder="Nombre del producto"
+                className="w-full"
+                value={productNameNew}
+                onChange={(e) => {
+                  setProductNameNew(e.target.value);
+                  setErrors({...errors, productName: validateName(e.target.value)});
+                }}
+              />
+              {errors.productName && (
+                <p className="text-red-500 text-sm mt-1">{errors.productName}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Descripción"
+                placeholder="Descripción"
+                className="w-full"
+                value={productDescriptionNew}
+                onChange={(e) => {
+                  setProductDescriptionNew(e.target.value);
+                  setErrors({...errors, productDescription: validateDescription(e.target.value)});
+                }}
+              />
+              {errors.productDescription && (
+                <p className="text-red-500 text-sm mt-1">{errors.productDescription}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Precio"
+                placeholder="Precio"
+                className="w-full"
+                value={productPriceNew}
+                onChange={(e) => {
+                  setProductPriceNew(e.target.value);
+                  setErrors({...errors, productPrice: validatePrice(e.target.value)});
+                }}
+              />
+              {errors.productPrice && (
+                <p className="text-red-500 text-sm mt-1">{errors.productPrice}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Cantidad"
+                placeholder="Cantidad"
+                className="w-full"
+                value={quantityNew}
+                onChange={(e) => {
+                  setQuantityNew(e.target.value);
+                  setErrors({...errors, quantity: validateQuantity(e.target.value)});
+                }}
+              />
+              {errors.quantity && (
+                <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col col-span-2">
+              <Select
+                label="Proveedor"
+                placeholder="Seleccione una opción"
+                className="w-full"
+                value={providerId}
+                onChange={(e) => {
+                  setProviderId(e.target.value);
+                  setErrors({...errors, providerId: validateProviderId(e.target.value)});
+                }}
+              >
+                <option value="">Selecciona un proveedor</option>
+                <option value="1">Proveedor 1</option>
+                <option value="2">Proveedor 2</option>
+                <option value="3">Proveedor 3</option>
+              </Select>
+              {errors.providerId && (
+                <p className="text-red-500 text-sm mt-1">{errors.providerId}</p>
+              )}
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="flex flex-row justify-around space-x-10 mx-24">
+            <Button
+              className="bg-red-500 hover:bg-red-800 px-10"
+              onClick={() => { closeModal(); clearCreateForm(); }}
+            >
+              <p className="text-lg">Cancelar</p>
+            </Button>
+            <button
+              onClick={handleCreateProduct}
+              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+            >
+              Añadir
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal de editar producto with validation */}
+      <Modal show={isModalEditOpen} onClose={closeModalEdit}>
+        <Modal.Header>Editar Producto</Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col">
+              <TextInput
+                label="Nombre"
+                placeholder={productos.find((producto) => producto.productId === actualId)?.productName}
+                className="w-full"
+                onChange={(e) => {
+                  setEditProductName(e.target.value);
+                  setEditErrors({...editErrors, productName: validateName(e.target.value)});
+                }}
+              />
+              {editErrors.productName && (
+                <p className="text-red-500 text-sm mt-1">{editErrors.productName}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Descripción"
+                placeholder={productos.find((producto) => producto.productId === actualId)?.productDescription}
+                className="w-full"
+                onChange={(e) => {
+                  setEditProductDescription(e.target.value);
+                  setEditErrors({...editErrors, productDescription: validateDescription(e.target.value)});
+                }}
+              />
+              {editErrors.productDescription && (
+                <p className="text-red-500 text-sm mt-1">{editErrors.productDescription}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Precio"
+                placeholder={productos.find((producto) => producto.productId === actualId)?.productPrice}
+                className="w-full"
+                onChange={(e) => {
+                  setEditProductPrice(e.target.value);
+                  setEditErrors({...editErrors, productPrice: validatePrice(e.target.value)});
+                }}
+              />
+              {editErrors.productPrice && (
+                <p className="text-red-500 text-sm mt-1">{editErrors.productPrice}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <TextInput
+                label="Cantidad"
+                placeholder={productos.find((producto) => producto.productId === actualId)?.quantity}
+                className="w-full"
+                onChange={(e) => {
+                  setEditQuantity(e.target.value);
+                  setEditErrors({...editErrors, quantity: validateQuantity(e.target.value)});
+                }}
+              />
+              {editErrors.quantity && (
+                <p className="text-red-500 text-sm mt-1">{editErrors.quantity}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col col-span-2">
+              <Select
+                label="Proveedor"
+                value={editProviderId || productos.find((producto) => producto.productId === actualId)?.userId || ""}
+                className="w-full"
+                onChange={(e) => {
+                  setEditProviderId(e.target.value);
+                  setEditErrors({...editErrors, providerId: validateProviderId(e.target.value)});
+                }}
+              >
+                <option value="">Selecciona un proveedor</option>
+                <option value="1">Proveedor 1</option>
+                <option value="2">Proveedor 2</option>
+                <option value="3">Proveedor 3</option>
+              </Select>
+              {editErrors.providerId && (
+                <p className="text-red-500 text-sm mt-1">{editErrors.providerId}</p>
+              )}
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="flex flex-row justify-around space-x-10 mx-24">
+            <Button
+              className="bg-red-500 hover:bg-red-800 px-10"
+              onClick={closeModalEdit}
+            >
+              <p className="text-lg">Cancelar</p>
+            </Button>
+            <button
+              onClick={() => {
+                handleEditProduct(actualId);
+              }}
+              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+            >
+              Editar
+            </button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Product list and other functionality */}
       <div className="w-full min-h-screen px-4">
         <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
           Productos
@@ -250,7 +551,6 @@ const Productos = () => {
             onChange={handleProviderChange}
           >
             <option value="">Todos los Proveedores</option>
-            {/* Añadir opciones de proveedores según tus datos */}
             <option value="1">Proveedor 1</option>
             <option value="2">Proveedor 2</option>
           </select>
@@ -308,7 +608,6 @@ const Productos = () => {
                           }).then((result) => {
                             if (result.isConfirmed) {
                               handleDeleteProduct(producto.productId);
-                              
                               Swal.fire(
                                 "¡Eliminado!",
                                 "El producto ha sido eliminado.",
@@ -337,38 +636,11 @@ const Productos = () => {
                 </div>
                 <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
               </div>
-              <div className="flex items-center justify-between pt-4">
-                <div>
-                  <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                  <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                </div>
-                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-              </div>
-              <div className="flex items-center justify-between pt-4">
-                <div>
-                  <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                  <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                </div>
-                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-              </div>
-              <div className="flex items-center justify-between pt-4">
-                <div>
-                  <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                  <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                </div>
-                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-              </div>
-              <div className="flex items-center justify-between pt-4">
-                <div>
-                  <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                  <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                </div>
-                <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-              </div>
               <span className="sr-only">Loading...</span>
             </div>
           )}
-          {/* Paginador de Flowbite */}
+        </div>
+
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
@@ -376,171 +648,17 @@ const Productos = () => {
             onPageChange={paginate}
           />
         </div>
-        </div>
 
         <div className="flex justify-end px-10">
           <button
             type="button"
-            onClick={() => {
-              openModal();
-            }}
+            onClick={openModal}
             className="text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-5 mb-2 dark:bg-lime-600 dark:hover:bg-lime-700 focus:outline-none dark:focus:ring-lime-800"
           >
             Añadir producto
           </button>
         </div>
       </div>
-
-      {/* Modal de crear producto */}
-      <Modal show={isModalOpen} onClose={closeModal}>
-        <Modal.Header>Añadir Producto</Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextInput
-              label="Nombre"
-              placeholder="Nombre del producto"
-              className="w-full"
-              onChange={(e) => setProductNameNew(e.target.value)}
-            />
-            <TextInput
-              label="Descripción"
-              placeholder="Descripción"
-              className="w-full"
-              onChange={(e) => setProductDescriptionNew(e.target.value)}
-            />
-            <TextInput
-              label="Precio"
-              placeholder="Precio"
-              className="w-full"
-              onChange={(e) => setProductPriceNew(e.target.value)}
-            />
-            <TextInput
-              label="Cantidad"
-              placeholder="Cantidad"
-              className="w-full"
-              onChange={(e) => setQuantityNew(e.target.value)}
-            />
-
-            <Select
-              label="provedor Id"
-              placeholder="Seleccione una opción"
-              className="w-full col-span-2"
-              onChange={(e) => setProviderId(e.target.value)}
-            >
-              <option value="">Selecciona un proveedor</option>
-              <option value="1">provedor 1</option>
-              <option value="2">proveedor 2</option>
-              <option value="3">proveedor 3</option>
-            </Select>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="flex flex-row justify-around space-x-10 mx-24">
-            <Button
-              className="bg-red-500 hover:bg-red-800 px-10"
-              onClick={closeModal}
-            >
-              <p className="text-lg">Cancelar</p>
-            </Button>
-            <button
-              onClick={() => {
-                handleCreateProduct();
-                closeModal();
-              }}
-              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
-            >
-              Añadir
-            </button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal de editar producto */}
-
-      <Modal show={isModalEditOpen} onClose={closeModalEdit}>
-        <Modal.Header>Editar Producto </Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextInput
-              label="Nombre"
-              placeholder={
-                productos.find((producto) => producto.productId === actualId)
-                  ?.productName
-              }
-              className="w-full"
-              onBlur={(e) => {
-                setEditProductName(e.target.value);
-              }}
-            />
-            <TextInput
-              label="Descripción"
-              placeholder={
-                productos.find((producto) => producto.productId === actualId)
-                  ?.productDescription
-              }
-              className="w-full"
-              onBlur={(e) => setEditProductDescription(e.target.value)}
-            />
-            <TextInput
-              label="Precio del producto"
-              placeholder={
-                productos.find((producto) => producto.productId === actualId)
-                  ?.productPrice
-              }
-              className="w-full"
-              onBlur={(e) => setEditProductPrice(e.target.value)}
-            />
-            <TextInput
-              label="Cantidad"
-              placeholder={
-                productos.find((producto) => producto.productId === actualId)
-                  ?.quantity
-              }
-              className="w-full"
-              onBlur={(e) => setEditQuantity(e.target.value)}
-            />
-
-            <Select
-              label="Provedor"
-              value={
-                editProviderId || // Si `editUserId` tiene un valor, lo usamos
-                productos.find((producto) => producto.productId === actualId)
-                  ?.userId || // Si no, usamos el `userId` del producto actual
-                "" // Si ninguno de los anteriores tiene valor, usamos una cadena vacía
-              }
-              className="w-full"
-              onChange={(e) => {
-                setEditProviderId(e.target.value);
-              }} // Actualizamos el estado con el valor de la opción seleccionada
-            >
-              <option value="1">provedor 1</option>
-              <option value="2">provedor 2</option>
-              <option value="3">Provedor 3</option>
-              <option value="4">Provedor 4</option>
-            </Select>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="flex flex-row justify-around space-x-10 mx-24">
-            <Button
-              className="bg-red-500 hover:bg-red-800 px-10"
-              onClick={closeModalEdit}
-            >
-              <p className="text-lg">Cancelar</p>
-            </Button>
-            <button
-              onClick={() => {
-                handleEditProduct(actualId);
-
-                closeModalEdit();
-              }}
-              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
-            >
-              Editar
-            </button>
-          </div>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 };
