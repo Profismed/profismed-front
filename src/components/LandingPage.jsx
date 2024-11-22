@@ -1,224 +1,237 @@
-import React, { useState, useEffect, act } from "react";
+import React, { useState, useEffect } from "react";
 import { TextInput } from "flowbite-react";
 import { HiSearch } from "react-icons/hi";
 import { Modal, Button, Select } from "flowbite-react";
 import Swal from "sweetalert2";
 
 const Personas = () => {
-  // Estado para almacenar las personas obtenidas de la API, inicializado como array vacío
+  // State definitions remain the same...
   const [personas, setPersonas] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState(""); // Para el filtro de nombre
-  const [selectedRole, setSelectedRole] = useState(""); // Para el filtro de rol
-
-  const [newUsername, setNewUsername] = useState("");
-  const [newFirstNmae, setNewFirstNmae] = useState("");
-  const [newLastName, setNewLastName] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPhone, setNewUserPhone] = useState("");
-  const [newRoleId, setNewRoleId] = useState();
-  const [newDocumentId, setNewDocumentId] = useState(1);
-  const [newDocumentNumber, setNewDocumentNumber] = useState("");
-  const [newUserJob, setNewUserJob] = useState("");
-  const [newUserContactOrigin, setNewUserContactOrigin] = useState("");
-  const [newLocationId, setNewLocationId] = useState();
-  const [newPassword, setNewPassword] = useState("");
-  const [newPasswordConfirmation, setNewPasswordConfirmation] = useState("");
-
-  const [editUsername, setEditUsername] = useState("");
-  const [editFirstName, setEditFirstNmae] = useState("");
-  const [editLastName, setEditLastName] = useState("");
-  const [editUserEmail, setEditUserEmail] = useState("");
-  const [editUserPhone, setEditUserPhone] = useState("");
-  const [editRoleId, setEditRoleId] = useState();
-  const [editDocumentId, setEditDocumentId] = useState();
-  const [editDocumentNumber, setEditDocumentNumber] = useState("");
-  const [editUserJob, setEditUserJob] = useState("");
-  const [editUserContactOrigin, setEditUserContactOrigin] = useState("");
-  const [editLocationId, setEditLocationId] = useState(1);
-  const [actualId, setActualId] = useState();
-
-     
-  const [errors, setErrors] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    userPhone: '',
-    documentId: '',
-    documentNumber: '',
-    userEmail: '',
-    password: '',
-    confirmPassword: '',
-    userJob: '',
-    userContactOrigin: '',
-    locationId: ''
+  // Form states for new user
+  const [formData, setFormData] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    userEmail: "",
+    userPhone: "",
+    roleId: "",
+    documentId: "1",
+    documentNumber: "",
+    userJob: "",
+    userContactOrigin: "",
+    locationId: "1",
+    password: "",
+    passwordConfirmation: ""
   });
 
-  const validateCreateUserFields = () => {
-    let valid = true;
-    let newErrors = {};
+  // Form states for edit user
+  const [editFormData, setEditFormData] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    userEmail: "",
+    userPhone: "",
+    roleId: "",
+    documentId: "",
+    documentNumber: "",
+    userJob: "",
+    userContactOrigin: "",
+    locationId: ""
+  });
 
-    // Verifica si los campos están vacíos
-    if (!newFirstNmae) {
-      newErrors.firstName = 'El campo Nombres es obligatorio.';
-      valid = false;
+  const [actualId, setActualId] = useState(null);
+  
+  // Unified errors state
+  const [errors, setErrors] = useState({});
+
+  // Validation rules
+  const validationRules = {
+    firstName: {
+      required: true,
+      pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$/,
+      message: "El nombre debe contener solo letras y tener entre 2 y 50 caracteres"
+    },
+    lastName: {
+      required: true,
+      pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$/,
+      message: "Los apellidos deben contener solo letras y tener entre 2 y 50 caracteres"
+    },
+    username: {
+      required: true,
+      pattern: /^[a-zA-Z0-9_]{4,20}$/,
+      message: "El nombre de usuario debe tener entre 4 y 20 caracteres alfanuméricos"
+    },
+    userPhone: {
+      required: true,
+      pattern: /^\d{10}$/,
+      message: "El teléfono debe contener 10 dígitos numéricos"
+    },
+    documentNumber: {
+      required: true,
+      pattern: /^\d{6,12}$/,
+      message: "El número de documento debe tener entre 6 y 12 dígitos"
+    },
+    userEmail: {
+      required: true,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "Ingrese un correo electrónico válido"
+    },
+    password: {
+      required: true,
+      pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
+      message: "La contraseña debe tener al menos 8 caracteres, una letra y un número"
+    },
+    userJob: {
+      required: true,
+      message: "El trabajo del usuario es requerido"
+    },
+    userContactOrigin: {
+      required: true,
+      message: "El origen del contacto es requerido"
     }
-    if (!newLastName) {
-      newErrors.lastName = 'El campo Apellidos es obligatorio.';
-      valid = false;
+  };
+
+  // Validate a single field
+  const validateField = (name, value) => {
+    const rules = validationRules[name];
+    if (!rules) return "";
+
+    if (rules.required && !value) {
+      return `El campo ${name} es requerido`;
     }
-    if (!newUsername) {
-      newErrors.username = 'El campo Nombre de Usuario es obligatorio.';
-      valid = false;
+
+    if (rules.pattern && !rules.pattern.test(value)) {
+      return rules.message;
     }
-    if (!newUserPhone || !/^\d+$/.test(newUserPhone)) {
-      newErrors.userPhone = 'El número de teléfono debe contener solo números.';
-      valid = false;
+
+    if (name === 'passwordConfirmation' && value !== formData.password) {
+      return "Las contraseñas no coinciden";
     }
-    if (!newDocumentId) {
-      newErrors.documentId = 'El tipo de identificación es obligatorio.';
-      valid = false;
-    }
-    if (!newDocumentNumber || !/^\d+$/.test(newDocumentNumber)) {
-      newErrors.documentNumber = 'El número de documento debe contener solo números.';
-      valid = false;
-    }
-    if (!newUserEmail || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(newUserEmail)) {
-      newErrors.userEmail = 'El correo electrónico debe ser válido.';
-      valid = false;
-    }
-    if (!newPassword) {
-      newErrors.password = 'La contraseña es obligatoria.';
-      valid = false;
-    }
-    if (newPassword !== newPasswordConfirmation) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden.';
-      valid = false;
-    }
-    if (!newUserJob) {
-      newErrors.userJob = 'El trabajo del usuario es obligatorio.';
-      valid = false;
-    }
-    if (!newUserContactOrigin) {
-      newErrors.userContactOrigin = 'El origen del contacto es obligatorio.';
-      valid = false;
-    }
+
+    return "";
+  };
+
+  // Validate all fields
+  const validateForm = (data, isEditMode = false) => {
+    const newErrors = {};
+    
+    Object.keys(validationRules).forEach(field => {
+      // Skip password validation in edit mode
+      if (isEditMode && (field === 'password' || field === 'passwordConfirmation')) {
+        return;
+      }
+      
+      const error = validateField(field, data[field]);
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
 
     setErrors(newErrors);
-    return valid;
+    return Object.keys(newErrors).length === 0;
   };
- 
-  // Función para hacer la petición fetch y obtener las personas
-  useEffect(() => {
-    const fetchPersonas = async () => {
-      const requestOptions = {
-        method: "GET",
-        credentials: "include",
-        redirect: "follow",
-      };
-      try {
-        const response = await fetch(
-          "https://profismedsgi.onrender.com/api/users/all",
-          requestOptions
-        );
-        const data = await response.json();
 
-        // Verifica si data es un array, si no, asigna un array vacío
-        if (Array.isArray(data)) {
-          setPersonas(data);
-        } else {
-          console.error("La respuesta no es un array:", data);
-          setPersonas([]);
-        }
-      } catch (error) {
-        console.error("Error al obtener las personas:", error);
-        setPersonas([]); // Asignar array vacío en caso de error
-      }
-    };
-    fetchPersonas();
-  }, []); // Se ejecuta al montar el componente
+  // Handle input changes
+  const handleInputChange = (e, isEdit = false) => {
+    const { name, value } = e.target;
+    const dataSet = isEdit ? editFormData : formData;
+    const setDataFunction = isEdit ? setEditFormData : setFormData;
 
+    setDataFunction({
+      ...dataSet,
+      [name]: value
+    });
+
+    // Clear error when user starts typing
+    setErrors({
+      ...errors,
+      [name]: ""
+    });
+  };
+
+  // Handle form submission for new user
   const handleNewUser = async () => {
-    try {
-      const raw = JSON.stringify({
-        username: newUsername,
-        firstName: newFirstNmae,
-        lastName: newLastName,
-        userEmail: newUserEmail,
-        userPhone: newUserPhone,
-        roleId: newRoleId,
-        documentId: newDocumentId,
-        documentNumber: newDocumentNumber,
-        userJob: newUserJob,
-        userContactOrigin: newUserContactOrigin,
-        locationId: newLocationId,
-        password: newPassword,
-      });
-
-      const requestOptions = {
-        method: "POST",
-        body: raw,
-        redirect: "follow",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      fetch(
-        "https://profismedsgi.onrender.com/api/users/register",
-        requestOptions
-      )
-        .then((response) => response.json())  // Parse the response as JSON
-        .then((result) => {
-          const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-              toast.onmouseenter = Swal.stopTimer;
-              toast.onmouseleave = Swal.resumeTimer;
-            },
-          });
-
-          // Use result.message to display the message from the response
-          Toast.fire({
-            icon: "info",
-            title: result.message,  // Display the message from the response object
-          });
-
-          console.log('Result ', result);  // Logs the entire result to the console
-        })
-        .catch((error) => { 
-          const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-              toast.onmouseenter = Swal.stopTimer;
-              toast.onmouseleave = Swal.resumeTimer;
-            },
-          });
-          
-          Toast.fire({
-            icon: "warning",
-            title: "Error en la creación del usuario",  // Customize the error message
-          });
-          console.error('Error', error)
-        });
-      closeModal();
-    } catch (error) {
-      console.error("An error occurred during user edit", error);
+    if (!validateForm(formData)) {
+      showToast("warning", "Por favor, corrija los errores en el formulario");
+      return;
     }
-  }
 
+    try {
+      const response = await fetch(
+        "https://profismedsgi.onrender.com/api/users/register",
+        {
+          method: "POST",
+          body: JSON.stringify(formData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || "Error al crear usuario");
+      }
+
+      showToast("success", "Usuario creado exitosamente");
+      closeModal();
+      // Refresh users list
+      fetchPersonas();
+    } catch (error) {
+      showToast("error", error.message);
+      console.error("Error creating user:", error);
+    }
+  };
+
+  // Handle form submission for edit user
+  const handleEditUser = async (id) => {
+    if (!validateForm(editFormData, true)) {
+      showToast("warning", "Por favor, corrija los errores en el formulario");
+      return;
+    }
+
+    try {
+      // Filter out empty values
+      const filteredData = Object.fromEntries(
+        Object.entries(editFormData).filter(([_, value]) => value !== "")
+      );
+
+      const response = await fetch(
+        `https://profismedsgi.onrender.com/api/users/update/${id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(filteredData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || "Error al actualizar usuario");
+      }
+
+      showToast("success", "Usuario actualizado exitosamente");
+      closeModalEdit();
+      // Refresh users list
+      fetchPersonas();
+    } catch (error) {
+      showToast("error", error.message);
+      console.error("Error updating user:", error);
+    }
+  };
+
+  // Handle delete user
   const handleDeleteUser = async (id) => {
     try {
       const requestOptions = {
@@ -239,87 +252,101 @@ const Personas = () => {
     }
   };
 
-  const handleEditUser = async (id) => {
+  // Toast utility function
+  const showToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  };
+
+  // Fetch users data
+  const fetchPersonas = async () => {
     try {
-      const data = {
-        username: editUsername,
-        firstName: editFirstName,
-        lastName: editLastName,
-        userEmail: editUserEmail,
-        userPhone: editUserPhone,
-        roleId: editRoleId,
-        documentId: editDocumentId,
-        documentNumber: editDocumentNumber,
-        userJob: editUserJob,
-        userContactOrigin: editUserContactOrigin,
-        locationId: editLocationId,
-      };
-
-      const filteredData = Object.fromEntries(
-        Object.entries(data).filter(
-          ([key, value]) => value !== undefined && value !== ""
-        )
-      );
-
-      const raw = JSON.stringify(filteredData);
-      const requestOptions = {
-        method: "PUT",
-        body: raw,
-        redirect: "follow",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
       const response = await fetch(
-        `https://profismedsgi.onrender.com/api/users/update/${id}`,
-        requestOptions
+        "https://profismedsgi.onrender.com/api/users/all",
+        {
+          credentials: "include",
+        }
       );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        setPersonas(data);
+      } else {
+        console.error("Invalid response format:", data);
+        setPersonas([]);
       }
-      const result = await response.json();
     } catch (error) {
-      console.error("An error occurred during user edit", error);
+      console.error("Error fetching users:", error);
+      setPersonas([]);
     }
   };
 
+  useEffect(() => {
+    fetchPersonas();
+  }, []);
+
+  // Modal handlers
   const openModal = () => {
+    setFormData({
+      username: "",
+      firstName: "",
+      lastName: "",
+      userEmail: "",
+      userPhone: "",
+      roleId: "",
+      documentId: "1",
+      documentNumber: "",
+      userJob: "",
+      userContactOrigin: "",
+      locationId: "1",
+      password: "",
+      passwordConfirmation: ""
+    });
+    setErrors({});
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setErrors({});
   };
+
   const openModalEdit = (id) => {
-    setIsModalEditOpen(true);
+    const user = personas.find(p => p.userId === id);
+    if (user) {
+      setEditFormData({
+        username: user.username || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        userEmail: user.userEmail || "",
+        userPhone: user.userPhone || "",
+        roleId: user.roleId?.toString() || "",
+        documentId: user.documentId?.toString() || "",
+        documentNumber: user.documentNumber || "",
+        userJob: user.userJob || "",
+        userContactOrigin: user.userContactOrigin || "",
+        locationId: user.locationId?.toString() || ""
+      });
+    }
     setActualId(id);
+    setErrors({});
+    setIsModalEditOpen(true);
   };
 
   const closeModalEdit = () => {
     setIsModalEditOpen(false);
-  };
+    setErrors({});
+  };  
 
-  // Función para manejar el cambio en el campo de búsqueda
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  const currentUser = personas.find((persona) => personas.userId === actualId);
 
-  // Función para manejar el cambio en el select del rol
-  const handleRoleChange = (e) => {
-    setSelectedRole(e.target.value);
-  };
-
-  // Filtrar personas en base a los criterios de búsqueda y rol seleccionado
-  const filteredPersonas = personas.filter((persona) => {
-    const matchesRole =
-      selectedRole === "" || persona.roleId.toString() === selectedRole;
-    const matchesName = persona.firstName
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return matchesRole && matchesName;
-  });
   return (
     <>
       <div className="w-full min-h-screen px-4">
@@ -330,161 +357,118 @@ const Personas = () => {
           Listado de personas registradas en la plataforma
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-end space-x-8 items-center mb-4">
-          <select
-            className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-            value={selectedRole}
-            onChange={handleRoleChange}
+        <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 w-full sm:w-auto">
+            <select
+              className="bg-gray-50 border w-full sm:w-44 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+            >
+              <option value="">Todos los roles</option>
+              <option value="2">Vendedor</option>
+              <option value="3">Cliente</option>
+              <option value="4">Proveedor</option>
+              <option value="5">Contacto</option>
+            </select>
+            <TextInput
+              className="w-full sm:w-44"
+              placeholder="Buscar"
+              icon={HiSearch}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={openModal}
+            className="text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-lime-600 dark:hover:bg-lime-700 focus:outline-none dark:focus:ring-lime-800"
           >
-            <option value="">Rol</option>
-            <option value="2">Vendedor</option>
-            <option value="3">Cliente</option>
-            <option value="4">Proveedor</option>
-            <option value="5">Contacto</option>
-          </select>
-          <TextInput
-            className="w-full sm:w-44 mb-2 sm:mb-0"
-            placeholder="Buscar"
-            icon={HiSearch}
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
+            Añadir persona
+          </button>
         </div>
 
-        <div className="relative overflow-x-auto">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">
-                  Nombre
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Correo
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Teléfono
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Rol
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Zona
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Acciones
-                </th>
+                <th scope="col" className="px-6 py-3">Nombre</th>
+                <th scope="col" className="px-6 py-3">Correo</th>
+                <th scope="col" className="px-6 py-3">Teléfono</th>
+                <th scope="col" className="px-6 py-3">Rol</th>
+                <th scope="col" className="px-6 py-3">Zona</th>
+                <th scope="col" className="px-6 py-3">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {filteredPersonas.length > 0 ? (
-                filteredPersonas.map((persona, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                  >
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                    >
-                      {persona.firstName}
-                    </th>
-                    <td className="px-6 py-4">{persona.userEmail}</td>
-                    <td className="px-6 py-4">{persona.userPhone}</td>
-                    <td className="px-6 py-4">
-                      {{
-                        2: "Vendedor",
-                        3: "Cliente",
-                        4: "Proveedor",
-                        5: "Contacto",
-                      }[persona.roleId] || "Desconocido"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {{
-                        1: "Bogotá",
-                        2: "Tunja",
-                      }[persona.locationId] || "Desconocido"}
-                    </td>
-                    <td className="px-6 py-4 flex flex-row space-x-2 gap-2">
-                      <button
-                        onClick={() => {
-                          openModalEdit(persona.userId);
-                        }}
-                        className="text-blue-500 text-xl"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="text-red-500 text-xl"
-                        onClick={() => {
-                          Swal.fire({
-                            title: "¿Estás seguro?",
-                            text: "¡No podrás revertir esto!",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#3085d6",
-                            cancelButtonColor: "#d33",
-                            confirmButtonText: "Sí, eliminar",
-                            cancelButtonText: "Cancelar",
-                          }).then((result) => {
-                            if (result.isConfirmed) {
-                              handleDeleteUser(persona.userId);
-                              Swal.fire(
-                                "¡Eliminado!",
-                                "El registro ha sido eliminado.",
-                                "success"
-                              );
-                            }
-                          });
-                        }}
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))
+              {personas.length > 0 ? (
+                personas
+                  .filter(persona => 
+                    (!selectedRole || persona.roleId.toString() === selectedRole) &&
+                    (!searchTerm || 
+                      persona.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      persona.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      persona.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                  )
+                  .map((persona) => (
+                    <tr key={persona.userId} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {`${persona.firstName} ${persona.lastName}`}
+                      </th>
+                      <td className="px-6 py-4">{persona.userEmail}</td>
+                      <td className="px-6 py-4">{persona.userPhone}</td>
+                      <td className="px-6 py-4">
+                        {{
+                          2: "Vendedor",
+                          3: "Cliente",
+                          4: "Proveedor",
+                          5: "Contacto"
+                        }[persona.roleId] || "Desconocido"}
+                      </td>
+                      <td className="px-6 py-4">
+                        {{
+                          1: "Bogotá",
+                          2: "Tunja"
+                        }[persona.locationId] || "Desconocido"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openModalEdit(persona.userId)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => {
+                              Swal.fire({
+                                title: "¿Estás seguro?",
+                                text: "¡No podrás revertir esto!",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "#d33",
+                                confirmButtonText: "Sí, eliminar",
+                                cancelButtonText: "Cancelar"
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  handleDeleteUser(persona.userId);
+                                }
+                              });
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-4 dark:text-white">
-                    <div
-                      role="status"
-                      className="w- bg-white p-4 space-y-4 border border-gray-200 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                        </div>
-                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-                      </div>
-                      <div className="flex items-center justify-between pt-4">
-                        <div>
-                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                        </div>
-                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-                      </div>
-                      <div className="flex items-center justify-between pt-4">
-                        <div>
-                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                        </div>
-                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-                      </div>
-                      <div className="flex items-center justify-between pt-4">
-                        <div>
-                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                        </div>
-                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-                      </div>
-                      <div className="flex items-center justify-between pt-4">
-                        <div>
-                          <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-600 w-24 mb-2.5"></div>
-                          <div className="w-32 h-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                        </div>
-                        <div className="h-2.5 bg-gray-300 rounded-full dark:bg-gray-700 w-12"></div>
-                      </div>
-                      <span className="sr-only">Loading...</span>
+                  <td colSpan="6" className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
                   </td>
                 </tr>
@@ -493,335 +477,396 @@ const Personas = () => {
           </table>
         </div>
 
-        <div className="flex justify-end px-10">
-          <button
-            type="button"
-            onClick={openModal}
-            className="text-white bg-lime-500 hover:bg-lime-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-5 mb-2 dark:bg-lime-600 dark:hover:bg-lime-700 focus:outline-none dark:focus:ring-lime-800"
-          >
-            Añadir persona
-          </button>
-        </div>
+        {/* Create User Modal */}
+        <Modal show={isModalOpen} onClose={closeModal}>
+          <Modal.Header>Añadir Persona</Modal.Header>
+          <Modal.Body>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <TextInput
+                  name="firstName"
+                  label="Nombres"
+                  placeholder="Nombres"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="lastName"
+                  label="Apellidos"
+                  placeholder="Apellidos"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="username"
+                  label="Nombre de usuario"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="userPhone"
+                  label="Teléfono"
+                  placeholder="Número de teléfono"
+                  value={formData.userPhone}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.userPhone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>
+                )}
+              </div>
+
+              <div>
+                <Select
+                  name="documentId"
+                  label="Tipo de identificación"
+                  value={formData.documentId}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                >
+                  <option value="1">Cédula de ciudadanía</option>
+                  <option value="2">Tarjeta de identidad</option>
+                  <option value="3">Cédula de extranjería</option>
+                  <option value="4">Pasaporte</option>
+                </Select>
+              </div>
+
+              <div>
+                <TextInput
+                  name="documentNumber"
+                  label="Número de documento"
+                  placeholder="Número de documento"
+                  value={formData.documentNumber}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.documentNumber && (
+                  <p className="text-red-500 text-xs mt-1">{errors.documentNumber}</p>
+                )}
+              </div>
+
+              <div className="col-span-2">
+                <TextInput
+                  name="userEmail"
+                  label="Correo electrónico"
+                  placeholder="Correo electrónico"
+                  value={formData.userEmail}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.userEmail && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="password"
+                  type="password"
+                  label="Contraseña"
+                  placeholder="Contraseña"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="passwordConfirmation"
+                  type="password"
+                  label="Confirmar contraseña"
+                  placeholder="Confirmar contraseña"
+                  value={formData.passwordConfirmation}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.passwordConfirmation && (
+                  <p className="text-red-500 text-xs mt-1">{errors.passwordConfirmation}</p>
+                )}
+              </div>
+
+              <div>
+                <Select
+                  name="roleId"
+                  label="Rol"
+                  value={formData.roleId}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                >
+                  <option value="">Seleccione un rol</option>
+                  <option value="2">Vendedor</option>
+                  <option value="3">Cliente</option>
+                  <option value="4">Proveedor</option>
+                  <option value="5">Contacto</option>
+                </Select>
+              </div>
+
+              <div>
+                <TextInput
+                  name="userJob"
+                  label="Trabajo"
+                  placeholder="Trabajo del usuario"
+                  value={formData.userJob}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.userJob && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userJob}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="userContactOrigin"
+                  label="Origen del contacto"
+                  placeholder="Origen del contacto"
+                  value={formData.userContactOrigin}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                />
+                {errors.userContactOrigin && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userContactOrigin}</p>
+                )}
+              </div>
+
+              <div>
+                <Select
+                  name="locationId"
+                  label="Ubicación"
+                  value={formData.locationId}
+                  onChange={(e) => handleInputChange(e)}
+                  className="w-full"
+                >
+                  <option value="1">Bogotá</option>
+                  <option value="2">Tunja</option>
+                </Select>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="flex justify-end space-x-4">
+              <Button className="bg-red-500 hover:bg-red-800" onClick={closeModal}>
+                Cancelar
+              </Button>
+              <Button 
+                className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
+                onClick={handleNewUser}>
+                Añadir
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+
+        {/* Edit User Modal */}
+        <Modal show={isModalEditOpen} onClose={closeModalEdit}>
+          <Modal.Header>Editar Persona</Modal.Header>
+          <Modal.Body>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <TextInput
+                  name="firstName"
+                  label="Nombres"
+                  placeholder={currentUser?.firstName || "Nombres"}
+                  value={editFormData.firstName}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="lastName"
+                  label="Apellidos"
+                  placeholder={currentUser?.lastName || "Apellidos"}
+                  value={editFormData.lastName}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="username"
+                  label="Nombre de usuario"
+                  placeholder={currentUser?.username || "Username"}
+                  value={editFormData.username}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="userPhone"
+                  label="Teléfono"
+                  placeholder={currentUser?.userPhone || "Número de teléfono"}
+                  value={editFormData.userPhone}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.userPhone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>
+                )}
+              </div>
+
+              <div>
+                <Select
+                  name="documentId"
+                  label="Tipo de identificación"
+                  value={editFormData.documentId}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                >
+                  <option value="CC">Cédula de ciudadanía</option>
+                  <option value="TI">Tarjeta de identidad</option>
+                  <option value="CE">Cédula de extranjería</option>
+                  <option value="PA">Pasaporte</option>
+                </Select>
+              </div>
+
+              <div>
+                <TextInput
+                  name="documentNumber"
+                  label="Número de documento"
+                  placeholder={currentUser?.documentNumber || "Número de documento"}
+                  value={editFormData.documentNumber}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.documentNumber && (
+                  <p className="text-red-500 text-xs mt-1">{errors.documentNumber}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="userJob"
+                  label="Trabajo"
+                  placeholder={currentUser?.userJob || "Trabajo del usuario"}
+                  value={editFormData.userJob}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.userJob && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userJob}</p>
+                )}
+              </div>
+
+              <div>
+                <TextInput
+                  name="userContactOrigin"
+                  label="Origen del contacto"
+                  placeholder={currentUser?.userContactOrigin || "Origen del contacto"}
+                  value={editFormData.userContactOrigin}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.userContactOrigin && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userContactOrigin}</p>
+                )}
+              </div>
+
+              <div className="col-span-2">
+                <TextInput
+                  name="userEmail"
+                  label="Correo electrónico"
+                  placeholder={currentUser?.userEmail || "Correo electrónico"}
+                  value={editFormData.userEmail}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                />
+                {errors.userEmail && (
+                  <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>
+                )}
+              </div>
+
+              <div>
+                <Select
+                  name="roleId"
+                  label="Rol"
+                  value={editFormData.roleId}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                >
+                  <option value="2">Vendedor</option>
+                  <option value="3">Cliente</option>
+                  <option value="4">Proveedor</option>
+                  <option value="5">Contacto</option>
+                </Select>
+              </div>
+
+              <div>
+                <Select
+                  name="locationId"
+                  label="Ubicación"
+                  value={editFormData.locationId}
+                  onChange={(e) => handleInputChange(e, true)}
+                  className="w-full"
+                >
+                  <option value="1">Bogotá</option>
+                  <option value="2">Tunja</option>
+                </Select>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="flex justify-end space-x-4">
+              <Button
+                className="bg-red-500 hover:bg-red-800"
+                onClick={closeModalEdit}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="bg-[#7747FF] hover:bg-[#5f35d5]"
+                onClick={() => {
+                  handleEditUser(actualId);
+                  closeModalEdit();
+                }}
+              >
+                Editar
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
       </div>
-      {/* Modal de crear usuario */}
-      <Modal show={isModalOpen} onClose={closeModal}>
-        <Modal.Header>Añadir Persona</Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextInput
-              label="Nombres"
-              placeholder="Nombres"
-              className="w-full"
-              onBlur={(e) => setNewFirstNmae(e.target.value)}
-            />
-            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
-
-            <TextInput
-              label="Apellidos"
-              placeholder="Apellidos"
-              className="w-full"
-              onBlur={(e) => setNewLastName(e.target.value)}
-            />
-            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
-
-            <TextInput
-              label="nombre de usuario"
-              placeholder="Username"
-              className="w-full"
-              onBlur={(e) => setNewUsername(e.target.value)}
-            />
-            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
-
-            <TextInput
-              label="numero de telefono"
-              placeholder="Numero de telefono"
-              className="w-full"
-              onBlur={(e) => setNewUserPhone(e.target.value)}
-            />
-            {errors.userPhone && <p className="text-red-500 text-sm">{errors.userPhone}</p>}
-
-            <Select
-              label="Tipo de identificación"
-              placeholder="Seleccione una opción"
-              className="w-full"
-              onChange={(e) => setNewDocumentId(e.target.value)}
-            >
-              <option value="1">Cédula de ciudadanía</option>
-              <option value="2">Tarjeta de identidad</option>
-              <option value="3">Cédula de extranjería</option>
-              <option value="4">Pasaporte</option>
-            </Select>
-            {errors.documentId && <p className="text-red-500 text-sm">{errors.documentId}</p>}
-
-            <TextInput
-              label="Número de documento"
-              placeholder="Número de documento"
-              className="w-full"
-              onBlur={(e) => setNewDocumentNumber(e.target.value)}
-            />
-            {errors.documentNumber && <p className="text-red-500 text-sm">{errors.documentNumber}</p>}
-
-            <div className="col-span-2">
-              <TextInput
-                label="Correo electrónico"
-                placeholder="Correo electrónico"
-                className="w-full"
-                onBlur={(e) => setNewUserEmail(e.target.value)}
-              />
-              {errors.userEmail && <p className="text-red-500 text-sm">{errors.userEmail}</p>}
-            </div>
-
-            <TextInput
-              label="Contraseña"
-              type="password"
-              placeholder="Contraseña"
-              className="w-full"
-              onBlur={(e) => setNewPassword(e.target.value)}
-            />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-
-            <TextInput
-              label="Confirmar contraseña"
-              type="password"
-              placeholder="Confirmar contraseña"
-              className="w-full"
-              onBlur={(e) => setNewPasswordConfirmation(e.target.value)}
-            />
-            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
-
-            <Select
-              label="Rol"
-              placeholder="Seleccione un rol"
-              className="w-full"
-              onChange={(e) => {
-                setNewRoleId(e.target.value);
-                console.log(e.target.value);
-              }}
-            >
-              <option value="2">Vendedor</option>
-              <option value="3">Cliente</option>
-              <option value="4">Proveedor</option>
-              <option value="5">Contacto</option>
-            </Select>
-
-            <TextInput
-              label="Trabajo del usuario"
-              placeholder="Describa el trabajo del usuario"
-              className="w-full"
-              onBlur={(e) => setNewUserJob(e.target.value)}
-            />
-            {errors.userJob && <p className="text-red-500 text-sm">{errors.userJob}</p>}
-
-            <TextInput
-              label="Origen del contacto"
-              placeholder="Origen del contacto"
-              className="w-full"
-              onBlur={(e) => setNewUserContactOrigin(e.target.value)}
-            />
-            {errors.userContactOrigin && <p className="text-red-500 text-sm">{errors.userContactOrigin}</p>}
-
-            <Select
-              label="ubicación"
-              placeholder="Seleccione una ubicacion"
-              className="w-full "
-              onChange={(e) => {
-                setNewLocationId(e.target.value);
-                console.log(e.target.value);
-              }}
-            >
-              <option value="1">Bogota</option>
-              <option value="2">Tunja</option>
-            </Select>
-            {errors.locationId && <p className="text-red-500 text-sm">{errors.locationId}</p>}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="flex flex-row justify-around space-x-10 mx-24">
-            <Button
-              className="bg-red-500 hover:bg-red-800 px-10"
-              onClick={closeModal}
-            >
-              <p className="text-lg">Cancelar</p>
-            </Button>
-            <button
-              onClick={() => {
-                if (validateCreateUserFields()) {
-                  handleNewUser()
-                } else {
-                  const Toast = Swal.mixin({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                      toast.onmouseenter = Swal.stopTimer;
-                      toast.onmouseleave = Swal.resumeTimer;
-                    },
-                  });
-
-                  // Use result.message to display the message from the response
-                  Toast.fire({
-                    icon: "warning",
-                    title: "Faltan campos por llenar",  // Display the message from the response object
-                  });
-                }
-              }}
-              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
-            >
-              Añadir
-            </button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-      {/* Modal de editar usuario */}
-
-      <Modal show={isModalEditOpen} onClose={closeModalEdit}>
-        <Modal.Header>Editar Persona </Modal.Header>
-        <Modal.Body>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TextInput
-              label="Nombres"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.firstName
-              }
-              className="w-full"
-              onBlur={(e) => setEditFirstNmae(e.target.value)}
-            />
-            <TextInput
-              label="Apellidos"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.lastName
-              }
-              className="w-full"
-              onBlur={(e) => setEditLastName(e.target.value)}
-            />
-            <TextInput
-              label="username"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.username
-              }
-              className="w-full"
-              onBlur={(e) => setEditUsername(e.target.value)}
-            />
-            <TextInput
-              label="numero de telefono"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.userPhone
-              }
-              className="w-full"
-              onBlur={(e) => setEditUserPhone(e.target.value)}
-            />
-            <TextInput
-              label="tipo de trabajo"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)?.userJob
-              }
-              className="w-full"
-              onBlur={(e) => setEditUserJob(e.target.value)}
-            />
-            <TextInput
-              label="origen del contacto"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.userContactOrigin
-              }
-              className="w-full"
-              onBlur={(e) => setEditUserContactOrigin(e.target.value)}
-            />
-            <Select
-              label="Tipo de identificación"
-              placeholder="Seleccione una opción"
-              className="w-full"
-              onChange={(e) => setEditDocumentId(e.target.selectedIndex)}
-            >
-              <option value="CC">Cédula de ciudadanía</option>
-              <option value="TI">Tarjeta de identidad</option>
-              <option value="CE">Cédula de extranjería</option>
-              <option value="PA">Pasaporte</option>
-            </Select>
-            <TextInput
-              label="Número de documento"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)
-                  ?.documentNumber
-              }
-              className="w-full"
-              onBlur={(e) => setEditDocumentNumber(e.target.value)}
-            />
-            <div className="col-span-2">
-              <TextInput
-                label="Correo electrónico"
-                placeholder={
-                  personas.find((persona) => persona.userId === actualId)
-                    ?.userEmail
-                }
-                className="w-full"
-                onBlur={(e) => setEditUserEmail(e.target.value)}
-              />
-            </div>
-            <Select
-              label="Rol"
-              value={
-                editRoleId || // Si el estado `editRoleId` ha sido editado, lo usamos
-                personas.find((persona) => persona.userId === actualId)
-                  ?.roleId ||
-                "" // Usamos el valor de roleId directamente
-              }
-              className="w-full"
-              onChange={(e) => setEditRoleId(e.target.value)} // Actualizamos el estado con el valor de la opción seleccionada
-            >
-              <option value="2">Vendedor</option>
-              <option value="3">Cliente</option>
-              <option value="4">Proveedor</option>
-              <option value="5">Contacto</option>
-            </Select>
-            <Select
-              label="location"
-              placeholder={
-                personas.find((persona) => persona.userId === actualId)?.roleId
-              }
-              className="w-full "
-              value={
-                editLocationId ||
-                personas.find((persona) => persona.userId === actualId)
-                  ?.locationId ||
-                ""
-              }
-              onChange={(e) => setEditLocationId(e.target.value)}
-            >
-              <option value="1">1</option>
-              <option value="2">2</option>
-            </Select>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="flex flex-row justify-around space-x-10 mx-24">
-            <Button
-              className="bg-red-500 hover:bg-red-800 px-10"
-              onClick={closeModalEdit}
-            >
-              <p className="text-lg">Cancelar</p>
-            </Button>
-            <button
-              onClick={() => {
-                handleEditUser(actualId);
-
-                closeModalEdit();
-              }}
-              className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
-            >
-              Editar
-            </button>
-          </div>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 };
 
-export default Personas;
+export default Personas                
