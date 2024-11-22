@@ -101,7 +101,8 @@ const Personas = () => {
   // Validate a single field
   const validateField = (name, value) => {
     const rules = validationRules[name];
-    if (!rules) return "";
+
+    if (!rules=== "") return "";
 
     if (rules.required && !value) {
       return `El campo ${name} es requerido`;
@@ -109,10 +110,6 @@ const Personas = () => {
 
     if (rules.pattern && !rules.pattern.test(value)) {
       return rules.message;
-    }
-
-    if (name === 'passwordConfirmation' && value !== formData.password) {
-      return "Las contraseñas no coinciden";
     }
 
     return "";
@@ -125,10 +122,6 @@ const Personas = () => {
     Object.keys(validationRules).forEach(field => {
       // Skip password validation in edit mode
       if (isEditMode && (field === 'password' || field === 'passwordConfirmation')) {
-        return;
-      }
-
-      if (isEditMode && data[field] === "") {
         return;
       }
       
@@ -153,10 +146,11 @@ const Personas = () => {
       [name]: value
     });
 
-    // Clear error when user starts typing
-    setErrors({
-      ...errors,
-      [name]: ""
+    // Clear specific field error when user starts typing
+    setErrors(prevErrors => {
+      const newErrors = {...prevErrors};
+      delete newErrors[name];
+      return newErrors;
     });
   };
 
@@ -201,17 +195,25 @@ const Personas = () => {
 
   // Handle form submission for edit user
   const handleEditUser = async (id) => {
-    if (!validateForm(editFormData, true)) {
-      showToast("warning", "Por favor, corrija los errores en el formulario");
-      return;
+
+      // Remove any pre-existing errors before validation
+    setErrors({});
+
+    // Create a copy of editFormData with only non-empty values
+    const filteredData = Object.fromEntries(
+      Object.entries(editFormData).filter(([_, value]) => value !== "")
+    );
+
+    // Validate only the changed fields
+    if (!validateForm(filteredData, true)) {
+      // If there are validation errors, show toast and stop
+      if (Object.keys(errors).length > 0) {
+        showToast("warning", "Por favor, corrija los errores en el formulario");
+        return;
+      }
     }
 
     try {
-      // Filter out empty values
-      const filteredData = Object.fromEntries(
-        Object.entries(editFormData).filter(([_, value]) => value !== "")
-      );
-
       const response = await fetch(
         `https://profismedsgi.onrender.com/api/users/update/${id}`,
         {
@@ -232,12 +234,11 @@ const Personas = () => {
 
       showToast("success", "Usuario actualizado exitosamente");
       closeModalEdit();
-      // Refresh users list
       fetchPersonas();
     } catch (error) {
       showToast("error", error.message);
       console.error("Error updating user:", error);
-    }
+    } 
   };
 
   // Handle delete user
@@ -354,7 +355,7 @@ const Personas = () => {
     setErrors({});
   };  
 
-  const currentUser = personas.find((persona) => personas.userId === actualId);
+  const currentUser = personas.find((persona) => persona.userId === actualId);
 
   return (
     <>
@@ -720,7 +721,6 @@ const Personas = () => {
                   name="firstName"
                   label="Nombres"
                   placeholder={currentUser?.firstName || "Nombres"}
-                  value={editFormData.firstName}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -734,7 +734,6 @@ const Personas = () => {
                   name="lastName"
                   label="Apellidos"
                   placeholder={currentUser?.lastName || "Apellidos"}
-                  value={editFormData.lastName}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -748,7 +747,6 @@ const Personas = () => {
                   name="username"
                   label="Nombre de usuario"
                   placeholder={currentUser?.username || "Username"}
-                  value={editFormData.username}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -762,7 +760,6 @@ const Personas = () => {
                   name="userPhone"
                   label="Teléfono"
                   placeholder={currentUser?.userPhone || "Número de teléfono"}
-                  value={editFormData.userPhone}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -775,7 +772,6 @@ const Personas = () => {
                 <Select
                   name="documentId"
                   label="Tipo de identificación"
-                  value={editFormData.documentId}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 >
@@ -791,7 +787,6 @@ const Personas = () => {
                   name="documentNumber"
                   label="Número de documento"
                   placeholder={currentUser?.documentNumber || "Número de documento"}
-                  value={editFormData.documentNumber}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -805,7 +800,6 @@ const Personas = () => {
                   name="userJob"
                   label="Trabajo"
                   placeholder={currentUser?.userJob || "Trabajo del usuario"}
-                  value={editFormData.userJob}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -819,7 +813,6 @@ const Personas = () => {
                   name="userContactOrigin"
                   label="Origen del contacto"
                   placeholder={currentUser?.userContactOrigin || "Origen del contacto"}
-                  value={editFormData.userContactOrigin}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -833,7 +826,6 @@ const Personas = () => {
                   name="userEmail"
                   label="Correo electrónico"
                   placeholder={currentUser?.userEmail || "Correo electrónico"}
-                  value={editFormData.userEmail}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
@@ -846,7 +838,6 @@ const Personas = () => {
                 <Select
                   name="roleId"
                   label="Rol"
-                  value={editFormData.roleId}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 >
@@ -861,7 +852,6 @@ const Personas = () => {
                 <Select
                   name="locationId"
                   label="Ubicación"
-                  value={editFormData.locationId}
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 >

@@ -76,8 +76,6 @@ const Login = () => {
       );
 
       if (response.ok) {
-        const data = await response.json();
-
         let userRole = "";
         const requestOptions = {
           method: "GET",
