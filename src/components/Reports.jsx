@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ApexCharts from "react-apexcharts";
 
 const Reportes = () => {
-  const [leastSalesZone, setLeastSalesZone] = useState(null);
+  const [leastSalesZone, setLeastSalesZone] = useState([]);
   const [topSalesZone, setTopSalesZone] = useState(null);
   const [leastSellingProduct, setLeastSellingProduct] = useState(null);
   const [topSellingProduct, setTopSellingProduct] = useState(null);
@@ -176,7 +176,7 @@ const Reportes = () => {
       .then((response) => response.json())
       .then((data) => {
         setMonthlySales(data);
-        console.log("data", data);
+console.log("data", data);
 
         setMonthlySalesChart({
           series: [
