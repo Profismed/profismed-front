@@ -26,6 +26,7 @@ const Personas = () => {
   const [newUserContactOrigin, setNewUserContactOrigin] = useState("");
   const [newLocationId, setNewLocationId] = useState();
   const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirmation, setNewPasswordConfirmation] = useState("");
 
   const [editUsername, setEditUsername] = useState("");
   const [editFirstName, setEditFirstNmae] = useState("");
@@ -40,6 +41,76 @@ const Personas = () => {
   const [editLocationId, setEditLocationId] = useState(1);
   const [actualId, setActualId] = useState();
 
+     
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    userPhone: '',
+    documentId: '',
+    documentNumber: '',
+    userEmail: '',
+    password: '',
+    confirmPassword: '',
+    userJob: '',
+    userContactOrigin: '',
+    locationId: ''
+  });
+
+  const validateCreateUserFields = () => {
+    let valid = true;
+    let newErrors = {};
+
+    // Verifica si los campos están vacíos
+    if (!newFirstNmae) {
+      newErrors.firstName = 'El campo Nombres es obligatorio.';
+      valid = false;
+    }
+    if (!newLastName) {
+      newErrors.lastName = 'El campo Apellidos es obligatorio.';
+      valid = false;
+    }
+    if (!newUsername) {
+      newErrors.username = 'El campo Nombre de Usuario es obligatorio.';
+      valid = false;
+    }
+    if (!newUserPhone || !/^\d+$/.test(newUserPhone)) {
+      newErrors.userPhone = 'El número de teléfono debe contener solo números.';
+      valid = false;
+    }
+    if (!newDocumentId) {
+      newErrors.documentId = 'El tipo de identificación es obligatorio.';
+      valid = false;
+    }
+    if (!newDocumentNumber || !/^\d+$/.test(newDocumentNumber)) {
+      newErrors.documentNumber = 'El número de documento debe contener solo números.';
+      valid = false;
+    }
+    if (!newUserEmail || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(newUserEmail)) {
+      newErrors.userEmail = 'El correo electrónico debe ser válido.';
+      valid = false;
+    }
+    if (!newPassword) {
+      newErrors.password = 'La contraseña es obligatoria.';
+      valid = false;
+    }
+    if (newPassword !== newPasswordConfirmation) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden.';
+      valid = false;
+    }
+    if (!newUserJob) {
+      newErrors.userJob = 'El trabajo del usuario es obligatorio.';
+      valid = false;
+    }
+    if (!newUserContactOrigin) {
+      newErrors.userContactOrigin = 'El origen del contacto es obligatorio.';
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+ 
   // Función para hacer la petición fetch y obtener las personas
   useEffect(() => {
     const fetchPersonas = async () => {
@@ -87,8 +158,6 @@ const Personas = () => {
         password: newPassword,
       });
 
-      console.log(raw);
-
       const requestOptions = {
         method: "POST",
         body: raw,
@@ -103,13 +172,52 @@ const Personas = () => {
         "https://profismedsgi.onrender.com/api/users/register",
         requestOptions
       )
-        .then((response) => response.text())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
+        .then((response) => response.json())  // Parse the response as JSON
+        .then((result) => {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+
+          // Use result.message to display the message from the response
+          Toast.fire({
+            icon: "info",
+            title: result.message,  // Display the message from the response object
+          });
+
+          console.log('Result ', result);  // Logs the entire result to the console
+        })
+        .catch((error) => { 
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onmouseenter = Swal.stopTimer;
+              toast.onmouseleave = Swal.resumeTimer;
+            },
+          });
+          
+          Toast.fire({
+            icon: "warning",
+            title: "Error en la creación del usuario",  // Customize the error message
+          });
+          console.error('Error', error)
+        });
+      closeModal();
     } catch (error) {
       console.error("An error occurred during user edit", error);
     }
-  };
+  }
 
   const handleDeleteUser = async (id) => {
     try {
@@ -406,24 +514,32 @@ const Personas = () => {
               className="w-full"
               onBlur={(e) => setNewFirstNmae(e.target.value)}
             />
+            {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+
             <TextInput
               label="Apellidos"
               placeholder="Apellidos"
               className="w-full"
               onBlur={(e) => setNewLastName(e.target.value)}
             />
+            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+
             <TextInput
               label="nombre de usuario"
               placeholder="Username"
               className="w-full"
               onBlur={(e) => setNewUsername(e.target.value)}
             />
+            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+
             <TextInput
               label="numero de telefono"
               placeholder="Numero de telefono"
               className="w-full"
               onBlur={(e) => setNewUserPhone(e.target.value)}
             />
+            {errors.userPhone && <p className="text-red-500 text-sm">{errors.userPhone}</p>}
+
             <Select
               label="Tipo de identificación"
               placeholder="Seleccione una opción"
@@ -435,12 +551,16 @@ const Personas = () => {
               <option value="3">Cédula de extranjería</option>
               <option value="4">Pasaporte</option>
             </Select>
+            {errors.documentId && <p className="text-red-500 text-sm">{errors.documentId}</p>}
+
             <TextInput
               label="Número de documento"
               placeholder="Número de documento"
               className="w-full"
               onBlur={(e) => setNewDocumentNumber(e.target.value)}
             />
+            {errors.documentNumber && <p className="text-red-500 text-sm">{errors.documentNumber}</p>}
+
             <div className="col-span-2">
               <TextInput
                 label="Correo electrónico"
@@ -448,24 +568,31 @@ const Personas = () => {
                 className="w-full"
                 onBlur={(e) => setNewUserEmail(e.target.value)}
               />
+              {errors.userEmail && <p className="text-red-500 text-sm">{errors.userEmail}</p>}
             </div>
+
             <TextInput
               label="Contraseña"
               type="password"
               placeholder="Contraseña"
               className="w-full"
+              onBlur={(e) => setNewPassword(e.target.value)}
             />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+
             <TextInput
               label="Confirmar contraseña"
               type="password"
               placeholder="Confirmar contraseña"
               className="w-full"
-              onBlur={(e) => setNewPassword(e.target.value)}
+              onBlur={(e) => setNewPasswordConfirmation(e.target.value)}
             />
+            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+
             <Select
               label="Rol"
               placeholder="Seleccione un rol"
-              className="w-full "
+              className="w-full"
               onChange={(e) => {
                 setNewRoleId(e.target.value);
                 console.log(e.target.value);
@@ -476,18 +603,23 @@ const Personas = () => {
               <option value="4">Proveedor</option>
               <option value="5">Contacto</option>
             </Select>
+
             <TextInput
               label="Trabajo del usuario"
               placeholder="Describa el trabajo del usuario"
               className="w-full"
               onBlur={(e) => setNewUserJob(e.target.value)}
             />
+            {errors.userJob && <p className="text-red-500 text-sm">{errors.userJob}</p>}
+
             <TextInput
               label="Origen del contacto"
               placeholder="Origen del contacto"
               className="w-full"
               onBlur={(e) => setNewUserContactOrigin(e.target.value)}
             />
+            {errors.userContactOrigin && <p className="text-red-500 text-sm">{errors.userContactOrigin}</p>}
+
             <Select
               label="ubicación"
               placeholder="Seleccione una ubicacion"
@@ -500,6 +632,7 @@ const Personas = () => {
               <option value="1">Bogota</option>
               <option value="2">Tunja</option>
             </Select>
+            {errors.locationId && <p className="text-red-500 text-sm">{errors.locationId}</p>}
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -512,8 +645,27 @@ const Personas = () => {
             </Button>
             <button
               onClick={() => {
-                handleNewUser();
-                closeModal();
+                if (validateCreateUserFields()) {
+                  handleNewUser()
+                } else {
+                  const Toast = Swal.mixin({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                      toast.onmouseenter = Swal.stopTimer;
+                      toast.onmouseleave = Swal.resumeTimer;
+                    },
+                  });
+
+                  // Use result.message to display the message from the response
+                  Toast.fire({
+                    icon: "warning",
+                    title: "Faltan campos por llenar",  // Display the message from the response object
+                  });
+                }
               }}
               className="inline-block py-2 px-6 rounded-l-xl rounded-t-xl bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200 text-gray-50 font-bold leading-loose transition duration-200"
             >
@@ -522,7 +674,6 @@ const Personas = () => {
           </div>
         </Modal.Footer>
       </Modal>
-
       {/* Modal de editar usuario */}
 
       <Modal show={isModalEditOpen} onClose={closeModalEdit}>
