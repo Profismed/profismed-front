@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css"; // Asegúrate de crear o adaptar los estilos si es necesario
+import "./Login.css";
 import Swal from "sweetalert2";
 
 const Login = () => {
@@ -8,6 +8,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleTabChange = (tab) => {
@@ -45,7 +46,6 @@ const Login = () => {
             icon: "info",
             title: "Sesión ya iniciada",
           });
-
         } else {
           console.error("Failed to fetch user data:", response.status);
         }
@@ -57,9 +57,10 @@ const Login = () => {
     checkSession();
   });
 
-
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage("");
 
     try {
       const response = await fetch(
@@ -70,17 +71,14 @@ const Login = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email, password }),
-          credentials: "include", // Esto asegura que las cookies se envíen y reciban
+          credentials: "include",
         }
       );
 
       if (response.ok) {
         const data = await response.json();
 
-        // Obtener el rol del usuario
         let userRole = "";
-
-        // Obtener el rol del usuario
         const requestOptions = {
           method: "GET",
           credentials: "include",
@@ -94,7 +92,6 @@ const Login = () => {
           );
           if (response.ok) {
             const data = await response.json();
-
             userRole = data.roleId;
           } else {
             console.error("Failed to fetch user data:", response.status);
@@ -108,7 +105,7 @@ const Login = () => {
         } else {
           navigate("/products");
         }
-        // navigate('/LandingPage');
+
         const Toast = Swal.mixin({
           toast: true,
           position: "top-end",
@@ -128,7 +125,7 @@ const Login = () => {
         const error = await response.json();
         console.error("Login failed:", error);
         if (error.message === "Session already active") {
-          setErrorMessage("Usuario no encontrado)");
+          setErrorMessage("Usuario no encontrado");
           navigate('/LandingPage');
           const Toast = Swal.mixin({
             toast: true,
@@ -145,15 +142,15 @@ const Login = () => {
             icon: "info",
             title: "Sesión ya iniciada",
           });
-        }else {
-          setErrorMessage("Fallo incio de ssesión");
+        } else {
+          setErrorMessage("Fallo inicio de sesión");
         }
-        
-            
       }
     } catch (error) {
       console.error("Login failed:", error);
       setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -192,6 +189,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -206,6 +204,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
                 required
+                disabled={isLoading}
               />
             </div>
             {errorMessage && (
@@ -213,9 +212,20 @@ const Login = () => {
             )}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-md"
+              className="w-full bg-blue-600 text-white py-2 rounded-md relative"
+              disabled={isLoading}
             >
-              Iniciar Sesión
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Cargando...
+                </div>
+              ) : (
+                "Iniciar Sesión"
+              )}
             </button>
           </form>
         ) : (

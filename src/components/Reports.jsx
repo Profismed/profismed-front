@@ -176,7 +176,7 @@ const Reportes = () => {
       .then((response) => response.json())
       .then((data) => {
         setMonthlySales(data);
-console.log("data", data);
+        console.log("data", data);
 
         setMonthlySalesChart({
           series: [
