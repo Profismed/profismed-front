@@ -139,6 +139,15 @@ const Sales = () => {
       return;
     }
 
+    if (!buyerSesionId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Por favor, selecciona un cliente.",
+      });
+      return;
+    }
+
     const producto = productos.find(
       (producto) => producto.productId === parseInt(nombre, 10)
     );
