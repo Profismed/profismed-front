@@ -91,6 +91,7 @@ const Clients = () => {
       }
       const data = await response.json();
       setContacto(prev => ({ ...prev, [id]: data[0] }));
+      localStorage.setItem("contacto", JSON.stringify(contacto));
     } catch (error) {
       console.error("Error fetching contact:", error);
     }
@@ -194,6 +195,7 @@ const Clients = () => {
       closeModal();
       // Refresh users list
       fetchPersonas();
+      fetchContact();
       refreshCache();
     } catch (error) {
       showToast("error", error.message);
@@ -245,6 +247,7 @@ const Clients = () => {
       showToast("success", "Usuario actualizado exitosamente");
       closeModalEdit();
       fetchPersonas();
+      fetchContact();
       refreshCache();
     } catch (error) {
       showToast("error", error.message);
@@ -287,17 +290,26 @@ const Clients = () => {
   };
 
   // Fetch all users
-  const fetchPersonas = async () => {
-     setIsLoading(true);
+   const fetchPersonas = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch("https://profismed-sgi-api.onrender.com/api/users/all", {
-        credentials: "include",
-      });
+      const response = await fetch(
+        "https://profismed-sgi-api.onrender.com/api/users/all",
+        {
+          credentials: "include",
+        }
+      );
       const data = await response.json();
       if (Array.isArray(data)) {
         setPersonas(data);
-        // Cache the data in localStorage
-        localStorage.setItem("clientsCache", JSON.stringify(data));
+        localStorage.setItem("personas", JSON.stringify(data));
+        // Fetch contact information for all clients (roleId === 3)
+        const clients = data.filter(person => person.roleId === 3);
+        clients.forEach(client => {
+          if (!contacto[client.userId]) {
+            fetchContact(client.userId);
+          }
+        });
       } else {
         console.error("Invalid response format:", data);
         setPersonas([]);
@@ -305,22 +317,25 @@ const Clients = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
       setPersonas([]);
-    } finally {
-      setIsLoading(false);
-    }  
+    }
   };
 
   useEffect(() => {
     const cachedPersonas = localStorage.getItem("clientsCache");
-    if (cachedPersonas) {
+    const cachedContacto = localStorage.getItem("contactoCache");
+    if (cachedPersonas && cachedContacto) {
       setPersonas(JSON.parse(cachedPersonas));
+      setContacto(JSON.parse(cachedContacto));
     } else {
       fetchPersonas();
+      fetchContact();
+      refreshCache();
     }
   }, []);
 
   const refreshCache = () => {
     fetchPersonas();
+    fetchContact();
   }
 
   // Modal handlers
