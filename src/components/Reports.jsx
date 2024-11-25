@@ -35,147 +35,79 @@ const Reportes = () => {
     options: {},
   });
 
-  useEffect(() => {
+  // Helper function to handle cached data
+  const getCachedData = (key, expirationMinutes = 30) => {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      const now = new Date().getTime();
+      const expirationTime = expirationMinutes * 60 * 1000;
+      
+      if (now - timestamp < expirationTime) {
+        return data;
+      }
+      localStorage.removeItem(key); // Remove expired data
+    }
+    return null;
+  };
+
+  // Helper function to set cached data
+  const setCachedData = (key, data) => {
+    const cacheObject = {
+      data,
+      timestamp: new Date().getTime()
+    };
+    localStorage.setItem(key, JSON.stringify(cacheObject));
+  };
+
+  // Helper function for fetching data with caching
+  const fetchWithCache = async (url, cacheKey, setter, chartSetter = null) => {
+    const cachedData = getCachedData(cacheKey);
+    
+    if (cachedData) {
+      setter(cachedData);
+      if (chartSetter && cachedData.length > 0) {
+        updateChart(cachedData, chartSetter);
+      }
+      return;
+    }
+
     const requestOptions = {
       method: "GET",
       credentials: "include",
       redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(url, requestOptions);
+      const data = await response.json();
+      setter(data);
+      setCachedData(cacheKey, data);
+      
+      if (chartSetter && data.length > 0) {
+        updateChart(data, chartSetter);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${cacheKey}:`, error);
     }
-    // Fetch Zona con Menos Ventas
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/zones/least-sales-zone",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setLeastSalesZone(data));
+  };
 
-    // Fetch Producto Más Vendido
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/top-selling-product",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setTopSellingProduct(data));
-
-    // Fetch Zona con Más Ventas
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/zones/top-sales-zone",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setTopSalesZone(data));
-
-    // Fetch Top Compradores
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-buyers",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setTopBuyers(data));
-
-    // Fetch Top Vendedores
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-sellers",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setTopSellers(data));
-
-    // Fetch Producto Menos Vendido
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/least-selling-product",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setLeastSellingProduct(data));
-
-    // // Fetch Ventas Mensuales
-    // fetch("https://profismedsgi.onrender.com/api/reports/sales/monthly-sales")
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     setMonthlySales(data);
-    //     setMonthlySalesChart({
-    //       series: [
-    //         {
-    //           name: "Ventas",
-    //           data: data.map((item) => item.total_sales),
-    //         },
-    //       ],
-    //       options: {
-    //         chart: {
-    //           type: "line",
-    //           height: 350,
-    //         },
-    //         xaxis: {
-    //           categories: data.map((item) => item.month),
-    //         },
-    //         title: {
-    //           text: "Ventas Mensuales",
-    //           align: "center",
-    //         },
-    //       },
-    //     });
-    //   });
-
-    // Fetch Top 10 Productos Más Vendidos
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/top-10-products",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setTop10Products(data);
-        setTop10ProductsChart({
-          series: [
-            {
-              name: "Cantidad Vendida",
-              data: data.map((product) => product.total_quantity_sold),
-            },
-          ],
+  // Helper functions for updating charts
+  const updateChart = (data, chartSetter) => {
+    switch(chartSetter) {
+      case setTopBuyersChart:
+        chartSetter({
+          series: [{
+            name: "Total Comprado en unidades",
+            data: data.map(buyer => 
+              buyer.products_bought.split(",").map(p => p.trim()).length
+            ),
+          }],
           options: {
-            chart: {
-              type: "bar",
-              height: 350,
-            },
+            chart: { type: "bar", height: 350 },
             xaxis: {
-              categories: data.map((product) => product.product_name),
-            },
-            title: {
-              text: "Top 10 Productos Más Vendidos",
-              align: "center",
-            },
-          },
-        });
-      });
-
-    // Fetch Top Buyers
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-buyers",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setTopBuyers(data);
-
-        setTopBuyersChart({
-          series: [
-            {
-              name: "Total Comprado en unidades",
-              data: data.map(
-                (buyer) =>
-                  buyer.products_bought.split(",").map((p) => p.trim()).length
-              ),
-            },
-          ],
-          options: {
-            chart: {
-              type: "bar",
-              height: 350,
-            },
-            xaxis: {
-              categories: data.map(
-                (buyer) =>
-                  `${buyer.contact_first_name} ${buyer.contact_last_name}`
+              categories: data.map(buyer => 
+                `${buyer.contact_first_name} ${buyer.contact_last_name}`
               ),
             },
             title: {
@@ -184,35 +116,43 @@ const Reportes = () => {
             },
           },
         });
-      });
+        break;
 
-    // Fetch Monthly Sales
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/sales/monthly-sales",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setMonthlySales(data);
+      case setTop10ProductsChart:
+        chartSetter({
+          series: [{
+            name: "Cantidad Vendida",
+            data: data.map(product => product.total_quantity_sold),
+          }],
+          options: {
+            chart: { type: "bar", height: 350 },
+            xaxis: {
+              categories: data.map(product => product.product_name),
+            },
+            title: {
+              text: "Top 10 Productos Más Vendidos",
+              align: "center",
+            },
+          },
+        });
+        break;
 
-        setMonthlySalesChart({
+      case setMonthlySalesChart:
+        chartSetter({
           series: [
             {
               name: "Ventas Totales",
-              data: data.map((sale) => sale.total_sales.toFixed(2)),
+              data: data.map(sale => sale.total_sales.toFixed(2)),
             },
             {
               name: "Transacciones",
-              data: data.map((sale) => sale.total_transactions),
+              data: data.map(sale => sale.total_transactions),
             },
           ],
           options: {
-            chart: {
-              type: "bar",
-              height: 350,
-            },
+            chart: { type: "bar", height: 350 },
             xaxis: {
-              categories: data.map((sale) => `Mes ${sale.month}`),
+              categories: data.map(sale => `Mes ${sale.month}`),
             },
             title: {
               text: "Ventas del Mes",
@@ -226,55 +166,93 @@ const Reportes = () => {
             },
           },
         });
-      });
+        break;
 
-    // Fetch Top Sellers
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-sellers",
-      requestOptions
-    )
-    .then((response) => {
-      return response.json(); // Properly return the JSON parsing promise
-    })
-    .then((data) => {
-      setTopSellers(data);
-      setTopSellersChart({
-        series: [
-          {
+      case setTopSellersChart:
+        chartSetter({
+          series: [{
             name: "Total Vendido en unidades",
-            data: data.map((seller) => seller.total_sales),
+            data: data.map(seller => seller.total_sales),
+          }],
+          options: {
+            chart: { type: "bar", height: 350 },
+            xaxis: {
+              categories: data.map(seller => 
+                `${seller.seller_first_name} ${seller.seller_last_name}`
+              ),
+            },
+            title: {
+              text: "Top Vendedores",
+              align: "center",
+            },
           },
-        ],
-        options: {
-          chart: {
-            type: "bar",
-            height: 350,
-          },
-          xaxis: {
-            categories: data.map(
-              (seller) => `${seller.seller_first_name} ${seller.seller_last_name}`
-            ),
-          },
-          title: {
-            text: "Top Vendedores",
-            align: "center",
-          },
-        },
-      });
-    })
-    .catch((error) => {
-      console.error("Error fetching top sellers:", error);
-    });
+        });
+        break;
+    }
+  };
 
-    // Fetch Resumen de Ventas por Productos
-    fetch(
-      "https://profismedsgi.onrender.com/api/reports/sales/sales-products-summary",
-      requestOptions
-    )
-      .then((response) => response.json())
-      .then((data) => setSalesProductSummary(data));
+  useEffect(() => {
+    const baseUrl = "https://profismed-sgi-api.onrender.com/api/reports";
+    
+    // Fetch all data with caching
+    fetchWithCache(
+      `${baseUrl}/zones/least-sales-zone`,
+      "leastSalesZone",
+      setLeastSalesZone
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/products/top-selling-product`,
+      "topSellingProduct",
+      setTopSellingProduct
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/zones/top-sales-zone`,
+      "topSalesZone",
+      setTopSalesZone
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/buyers-sellers/top-buyers`,
+      "topBuyers",
+      setTopBuyers,
+      setTopBuyersChart
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/buyers-sellers/top-sellers`,
+      "topSellers",
+      setTopSellers,
+      setTopSellersChart
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/products/least-selling-product`,
+      "leastSellingProduct",
+      setLeastSellingProduct
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/products/top-10-products`,
+      "top10Products",
+      setTop10Products,
+      setTop10ProductsChart
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/sales/monthly-sales`,
+      "monthlySales",
+      setMonthlySales,
+      setMonthlySalesChart
+    );
+    
+    fetchWithCache(
+      `${baseUrl}/sales/sales-products-summary`,
+      "salesProductSummary",
+      setSalesProductSummary
+    );
   }, []);
-
   const renderSalesProductSummary = () => {
     if (!salesProductSummary) return <p>Cargando...</p>;
     return salesProductSummary.map((sale) => (

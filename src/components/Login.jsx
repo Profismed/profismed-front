@@ -26,7 +26,7 @@ const Login = () => {
 
       try {
         const response = await fetch(
-          "https://profismedsgi.onrender.com/api/auth/userData",
+          "https://profismed-sgi-api.onrender.com/api/auth/userData",
           requestOptions
         );
         if (response.ok) {
@@ -64,7 +64,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/auth/login",
+        "https://profismed-sgi-api.onrender.com/api/auth/login",
         {
           method: "POST",
           headers: {
@@ -85,7 +85,7 @@ const Login = () => {
 
         try {
           const response = await fetch(
-            "https://profismedsgi.onrender.com/api/auth/userData",
+            "https://profismed-sgi-api.onrender.com/api/auth/userData",
             requestOptions
           );
           if (response.ok) {

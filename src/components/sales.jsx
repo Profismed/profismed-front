@@ -20,7 +20,7 @@ const Sales = () => {
       };
       try {
         const response = await fetch(
-          "https://profismedsgi.onrender.com/api/users/all",
+          "https://profismed-sgi-api.onrender.com/api/users/all",
           requestOptions
         );
         const data = await response.json();
@@ -47,7 +47,7 @@ const Sales = () => {
 
     //     try {
     //       const response = await fetch(
-    //         "https://profismedsgi.onrender.com/api/auth/userData",
+    //         "https://profismed-sgi-api.onrender.com/api/auth/userData",
     //         requestOptions
     //       );
     //       if (response.ok) {
@@ -70,7 +70,7 @@ const Sales = () => {
       };
       try {
         const response = await fetch(
-          "https://profismedsgi.onrender.com/api/products/all",
+          "https://profismed-sgi-api.onrender.com/api/products/all",
           requestOptions
         );
         const data = await response.json();
@@ -99,7 +99,7 @@ const Sales = () => {
 
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/auth/userData",
+        "https://profismed-sgi-api.onrender.com/api/auth/userData",
         requestOptions
       );
       if (response.ok) {
@@ -209,7 +209,7 @@ const Sales = () => {
 
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/sales/create",
+        "https://profismed-sgi-api.onrender.com/api/sales/create",
         requestOptions
       );
 
@@ -286,11 +286,16 @@ const Sales = () => {
           >
             Selecciona un cliente:
           </label>
-          <select
+                   <select
             id="clients"
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             onChange={(event) => {
-              setBuyerSesionId(event.target.value);
+              const selectedValue = event.target.value;
+              if (selectedValue === "create-client") {
+                window.location.href = "/clients";
+              } else {
+                setBuyerSesionId(selectedValue);
+              }
             }}
           >
             <option selected>Seleccione un cliente</option>
@@ -301,6 +306,7 @@ const Sales = () => {
                   {persona.firstName}
                 </option>
               ))}
+            <option value="create-client">Crear un cliente</option>
           </select>
           {/*<p class="mt-2 text-sm text-red-600 dark:text-red-500"><span class="font-medium">Oh, snapp!</span> Some error message.</p>*/}
         </div>

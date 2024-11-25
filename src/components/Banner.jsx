@@ -25,7 +25,7 @@ const Banner = () => {
 
       try {
         const response = await fetch(
-          "https://profismedsgi.onrender.com/api/auth/userData",
+          "https://profismed-sgi-api.onrender.com/api/auth/userData",
           requestOptions
         );
         if (response.ok) {
@@ -47,7 +47,7 @@ const Banner = () => {
   const handleLogout = async () => {
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/auth/logout",
+        "https://profismed-sgi-api.onrender.com/api/auth/logout",
         {
           method: "POST",
           redirect: "follow",
@@ -98,7 +98,7 @@ const Banner = () => {
       };
 
       const response = await fetch(
-        `https://profismedsgi.onrender.com/api/users/update/${userId}`,
+        `https://profismed-sgi-api.onrender.com/api/users/update/${userId}`,
         requestOptions
       );
       if (!response.ok) {

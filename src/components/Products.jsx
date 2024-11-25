@@ -85,29 +85,39 @@ const Productos = () => {
 
   // Realizar la petición fetch a la API de productos
   const fetchProductos = async () => {
-    // Fetch de productos como ya lo tienes
-    const requestOptions = {
-      method: "GET",
-      credentials: "include",
-      redirect: "follow",
-    };
+    setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://profismedsgi.onrender.com/api/products/all",
-        requestOptions
-      );
+      const response = await fetch("https://profismed-sgi-api.onrender.com/api/products/all", {
+        method: "GET",
+        credentials: "include",
+        redirect: "follow",
+      });
       const data = await response.json();
       if (Array.isArray(data)) {
         setProductos(data);
-        setFilteredProducts(data); // Inicializar productos filtrados
+        setFilteredProducts(data);
+        // Cache the data in localStorage
+        localStorage.setItem("productsCache", JSON.stringify(data));
       }
     } catch (error) {
       console.error("Error al obtener los productos:", error);
-    }
+    } finally {
+      setIsLoading(false);
+    }  
   };
 
-  useEffect(() => {
+  const refreshCache = () => {
     fetchProductos();
+  }
+
+  useEffect(() => {
+    const cachedProducts = localStorage.getItem("productosCache");
+    if (cachedProducts) {
+      setProductos(JSON.parse(cachedProducts));
+      setFilteredProducts(JSON.parse(cachedProducts));
+    } else {
+      fetchProductos();
+    }
   }, []);
 
   // Handle create form validation
@@ -148,7 +158,7 @@ const Productos = () => {
       };
 
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/products/create",
+        "https://profismed-sgi-api.onrender.com/api/products/create",
         requestOptions
       );
       const data = await response.json();
@@ -156,6 +166,7 @@ const Productos = () => {
         fetchProductos();
         setIsModalOpen(false);
         clearCreateForm();
+        refreshCache();
       } else {
         console.error("Error al crear el producto:", data);
       }
@@ -174,7 +185,7 @@ const Productos = () => {
       };
 
       const response = await fetch(
-        `https://profismedsgi.onrender.com/api/products/delete/${productId}`,
+        `https://profismed-sgi-api.onrender.com/api/products/delete/${productId}`,
         requestOptions
       );
       if (response.ok) {
@@ -186,6 +197,7 @@ const Productos = () => {
       } else {
         console.error("Error al eliminar el producto:", response.status);
       }
+      refreshCache();
     } catch (error) {
       console.error("Error al eliminar el producto:", error);
     }
@@ -240,7 +252,7 @@ const Productos = () => {
     };
 
     const response = await fetch(
-      `https://profismedsgi.onrender.com/api/products/update/${productId}`,
+      `https://profismed-sgi-api.onrender.com/api/products/update/${productId}`,
       requestOptions
     );
     const data = await response.json();
@@ -262,6 +274,7 @@ const Productos = () => {
       });
       console.error("Error al editar el producto:", data);
     }
+    refreshCache();
   } catch (error) {
     Swal.fire({
       icon: 'error',

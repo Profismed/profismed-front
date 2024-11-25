@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'r
 import Sidebar from './components/Sidebar';
 import Banner from './components/Banner'; 
 import LandingPage from './components/LandingPage';
+import Clients from './components/clients';
 import Products from './components/Products';
 import Reports from './components/Reports';
 import Login from './components/Login';
@@ -14,7 +15,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Define the routes where the Banner should appear
-  const showBannerRoutes = ['/landingpage', '/products', '/reports', '/ventas'];
+  const showBannerRoutes = ['/landingpage', '/products', '/reports', '/ventas', '/clients'];	
 
   // Determine whether to show Sidebar and Banner
   const isLoginPage = location.pathname === '/';
@@ -40,6 +41,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/landingpage" element={<LandingPage />} />
+          <Route path="/clients" element={<Clients />} />
           <Route path="/products" element={<Products />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/ventas" element={<Sales />} />
