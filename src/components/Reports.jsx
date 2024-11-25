@@ -43,7 +43,7 @@ const Reportes = () => {
     }
     // Fetch Zona con Menos Ventas
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/zones/least-sales-zone",
+      "https://profismed-sgi-api.onrender.com/api/reports/zones/least-sales-zone",
       requestOptions
     )
       .then((response) => response.json())
@@ -51,7 +51,7 @@ const Reportes = () => {
 
     // Fetch Producto Más Vendido
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/top-selling-product",
+      "https://profismed-sgi-api.onrender.com/api/reports/products/top-selling-product",
       requestOptions
     )
       .then((response) => response.json())
@@ -59,7 +59,7 @@ const Reportes = () => {
 
     // Fetch Zona con Más Ventas
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/zones/top-sales-zone",
+      "https://profismed-sgi-api.onrender.com/api/reports/zones/top-sales-zone",
       requestOptions
     )
       .then((response) => response.json())
@@ -67,7 +67,7 @@ const Reportes = () => {
 
     // Fetch Top Compradores
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-buyers",
+      "https://profismed-sgi-api.onrender.com/api/reports/buyers-sellers/top-buyers",
       requestOptions
     )
       .then((response) => response.json())
@@ -75,7 +75,7 @@ const Reportes = () => {
 
     // Fetch Top Vendedores
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-sellers",
+      "https://profismed-sgi-api.onrender.com/api/reports/buyers-sellers/top-sellers",
       requestOptions
     )
       .then((response) => response.json())
@@ -83,14 +83,14 @@ const Reportes = () => {
 
     // Fetch Producto Menos Vendido
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/least-selling-product",
+      "https://profismed-sgi-api.onrender.com/api/reports/products/least-selling-product",
       requestOptions
     )
       .then((response) => response.json())
       .then((data) => setLeastSellingProduct(data));
 
     // // Fetch Ventas Mensuales
-    // fetch("https://profismedsgi.onrender.com/api/reports/sales/monthly-sales")
+    // fetch("https://profismed-sgi-api.onrender.com/api/reports/sales/monthly-sales")
     //   .then((response) => response.json())
     //   .then((data) => {
     //     setMonthlySales(data);
@@ -119,7 +119,7 @@ const Reportes = () => {
 
     // Fetch Top 10 Productos Más Vendidos
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/products/top-10-products",
+      "https://profismed-sgi-api.onrender.com/api/reports/products/top-10-products",
       requestOptions
     )
       .then((response) => response.json())
@@ -150,7 +150,7 @@ const Reportes = () => {
 
     // Fetch Top Buyers
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-buyers",
+      "https://profismed-sgi-api.onrender.com/api/reports/buyers-sellers/top-buyers",
       requestOptions
     )
       .then((response) => response.json())
@@ -188,7 +188,7 @@ const Reportes = () => {
 
     // Fetch Monthly Sales
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/sales/monthly-sales",
+      "https://profismed-sgi-api.onrender.com/api/reports/sales/monthly-sales",
       requestOptions
     )
       .then((response) => response.json())
@@ -230,7 +230,7 @@ const Reportes = () => {
 
     // Fetch Top Sellers
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/buyers-sellers/top-sellers",
+      "https://profismed-sgi-api.onrender.com/api/reports/buyers-sellers/top-sellers",
       requestOptions
     )
     .then((response) => {
@@ -268,7 +268,7 @@ const Reportes = () => {
 
     // Fetch Resumen de Ventas por Productos
     fetch(
-      "https://profismedsgi.onrender.com/api/reports/sales/sales-products-summary",
+      "https://profismed-sgi-api.onrender.com/api/reports/sales/sales-products-summary",
       requestOptions
     )
       .then((response) => response.json())

@@ -7,7 +7,6 @@ import Swal from "sweetalert2";
 const Personas = () => {
   // Spinner
   const [isLoading, setIsLoading] = useState(false);
-  // State definitions remain the same...
   const [personas, setPersonas] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
@@ -22,13 +21,13 @@ const Personas = () => {
     userEmail: "",
     userPhone: "",
     roleId: "",
-    documentId: "1",
+    documentId: "",
     documentNumber: "",
     userJob: "",
     userContactOrigin: "",
     locationId: "1",
     password: "",
-    passwordConfirmation: ""
+    passwordConfirmation: "",
   });
 
   // Form states for edit user
@@ -43,12 +42,9 @@ const Personas = () => {
     documentNumber: "",
     userJob: "",
     userContactOrigin: "",
-    locationId: ""
+    locationId: "",
   });
-
   const [actualId, setActualId] = useState(null);
-  
-  // Unified errors state
   const [errors, setErrors] = useState({});
 
   // Validation rules
@@ -56,53 +52,62 @@ const Personas = () => {
     firstName: {
       required: true,
       pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$/,
-      message: "El nombre debe contener solo letras y tener entre 2 y 50 caracteres"
+      message:
+        "El nombre debe contener solo letras y tener entre 2 y 50 caracteres",
     },
     lastName: {
       required: true,
       pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$/,
-      message: "Los apellidos deben contener solo letras y tener entre 2 y 50 caracteres"
+      message:
+        "Los apellidos deben contener solo letras y tener entre 2 y 50 caracteres",
     },
     username: {
       required: true,
-      pattern: /^[a-zA-Z0-9_]{4,20}$/,
-      message: "El nombre de usuario debe tener entre 4 y 20 caracteres alfanuméricos"
+      pattern: /^[a-zA-Z0-9_]{1,20}$/,
+      message:
+        "El nombre de usuario debe tener entre 4 y 20 caracteres alfanuméricos",
     },
     userPhone: {
-      required: true,
-      pattern: /^\d{10}$/,
-      message: "El teléfono debe contener 10 dígitos numéricos"
+      required: false,
+      pattern: /^[0-9\s+]+$/,
+      message: "El teléfono debe contener 10 dígitos numéricos",
     },
     documentNumber: {
       required: true,
-      pattern: /^\d{6,12}$/,
-      message: "El número de documento debe tener entre 6 y 12 dígitos"
+      pattern: /^\d{1,32}$/,
+      message: "El número de documento debe tener entre 1 y 32 dígitos",
     },
     userEmail: {
       required: true,
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      message: "Ingrese un correo electrónico válido"
+      message: "Ingrese un correo electrónico válido",
     },
     password: {
       required: true,
-      pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
-      message: "La contraseña debe tener al menos 8 caracteres, una letra y un número"
+      pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{0,8}$/,
+      message:
+        "La contraseña debe tener entre 0 y 8 caracteres, una letra y un número",
     },
     userJob: {
       required: true,
-      message: "El trabajo del usuario es requerido"
+      message: "El trabajo del usuario es requerido",
     },
     userContactOrigin: {
       required: true,
-      message: "El origen del contacto es requerido"
-    }
+      message: "El origen del contacto es requerido",
+    },
   };
 
-  // Validate a single field
-  const validateField = (name, value) => {
+ // Updated validateField function
+ const validateField = (name, value, isEdit = false) => {
     const rules = validationRules[name];
+    
+    // Skip validation for empty fields in edit mode
+    if (isEdit && (value === "" || value === undefined)) {
+      return "";
+    }
 
-    if (!rules=== "") return "";
+    if (!rules) return "";
 
     if (rules.required && !value) {
       return `El campo ${name} es requerido`;
@@ -115,17 +120,22 @@ const Personas = () => {
     return "";
   };
 
-  // Validate all fields
+  // Updated validateForm function
   const validateForm = (data, isEditMode = false) => {
     const newErrors = {};
-    
-    Object.keys(validationRules).forEach(field => {
+
+    Object.keys(data).forEach((field) => {
       // Skip password validation in edit mode
-      if (isEditMode && (field === 'password' || field === 'passwordConfirmation')) {
+      if (isEditMode && (field === "password" || field === "passwordConfirmation")) {
         return;
       }
-      
-      const error = validateField(field, data[field]);
+
+      // Only validate fields that have values in edit mode
+      if (isEditMode && (data[field] === "" || data[field] === undefined)) {
+        return;
+      }
+
+      const error = validateField(field, data[field], isEditMode);
       if (error) {
         newErrors[field] = error;
       }
@@ -143,15 +153,15 @@ const Personas = () => {
 
     setDataFunction({
       ...dataSet,
-      [name]: value
+      [name]: value,
     });
 
-    // Clear specific field error when user starts typing
-    setErrors(prevErrors => {
-      const newErrors = {...prevErrors};
-      delete newErrors[name];
-      return newErrors;
-    });
+    // Validate the field as it's changed
+    const error = validateField(name, value, isEdit);
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: error || undefined
+    }));
   };
 
   // Handle form submission for new user
@@ -161,10 +171,12 @@ const Personas = () => {
       return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
+
+    // Remove empty fields from form data
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/users/register",
+        "https://profismed-sgi-api.onrender.com/api/users/register",
         {
           method: "POST",
           body: JSON.stringify(formData),
@@ -176,7 +188,7 @@ const Personas = () => {
       );
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.message || "Error al crear usuario");
       }
@@ -189,33 +201,33 @@ const Personas = () => {
       showToast("error", error.message);
       console.error("Error creating user:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
 
-  // Handle form submission for edit user
+  // Updated handleEditUser function
   const handleEditUser = async (id) => {
-
-      // Remove any pre-existing errors before validation
-    setErrors({});
-
+    setIsLoading(true);
     // Create a copy of editFormData with only non-empty values
     const filteredData = Object.fromEntries(
-      Object.entries(editFormData).filter(([_, value]) => value !== "")
+      Object.entries(editFormData).filter(([_, value]) => value !== "" && value !== undefined)
     );
 
-    // Validate only the changed fields
+    // If no fields were changed, show warning and return
+    if (Object.keys(filteredData).length === 0) {
+      showToast("warning", "No se han realizado cambios");
+      return;
+    }
+
+    // Validate only the fields that have values
     if (!validateForm(filteredData, true)) {
-      // If there are validation errors, show toast and stop
-      if (Object.keys(errors).length > 0) {
-        showToast("warning", "Por favor, corrija los errores en el formulario");
-        return;
-      }
+      showToast("warning", "Por favor, corrija los errores en el formulario");
+      return;
     }
 
     try {
       const response = await fetch(
-        `https://profismedsgi.onrender.com/api/users/update/${id}`,
+        `https://profismed-sgi-api.onrender.com/api/users/update/${id}`,
         {
           method: "PUT",
           body: JSON.stringify(filteredData),
@@ -227,7 +239,7 @@ const Personas = () => {
       );
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.message || "Error al actualizar usuario");
       }
@@ -238,7 +250,9 @@ const Personas = () => {
     } catch (error) {
       showToast("error", error.message);
       console.error("Error updating user:", error);
-    } 
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle delete user
@@ -251,7 +265,7 @@ const Personas = () => {
       };
 
       fetch(
-        `https://profismedsgi.onrender.com/api/users/delete/${id}`,
+        `https://profismed-sgi-api.onrender.com/api/users/delete/${id}`,
         requestOptions
       )
         .then((response) => response.text())
@@ -279,13 +293,13 @@ const Personas = () => {
   const fetchPersonas = async () => {
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/users/all",
+        "https://profismed-sgi-api.onrender.com/api/users/all",
         {
           credentials: "include",
         }
       );
       const data = await response.json();
-      
+
       if (Array.isArray(data)) {
         setPersonas(data);
       } else {
@@ -317,19 +331,21 @@ const Personas = () => {
       userContactOrigin: "",
       locationId: "1",
       password: "",
-      passwordConfirmation: ""
+      passwordConfirmation: "",
     });
     setErrors({});
     setIsModalOpen(true);
   };
 
+  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
     setErrors({});
   };
 
+  // Open edit modal
   const openModalEdit = (id) => {
-    const user = personas.find(p => p.userId === id);
+    const user = personas.find((p) => p.userId === id);
     if (user) {
       setEditFormData({
         username: user.username || "",
@@ -342,7 +358,7 @@ const Personas = () => {
         documentNumber: user.documentNumber || "",
         userJob: user.userJob || "",
         userContactOrigin: user.userContactOrigin || "",
-        locationId: user.locationId?.toString() || ""
+        locationId: user.locationId?.toString() || "",
       });
     }
     setActualId(id);
@@ -350,10 +366,11 @@ const Personas = () => {
     setIsModalEditOpen(true);
   };
 
+  // Close edit modal
   const closeModalEdit = () => {
     setIsModalEditOpen(false);
     setErrors({});
-  };  
+  };
 
   const currentUser = personas.find((persona) => persona.userId === actualId);
 
@@ -376,9 +393,7 @@ const Personas = () => {
             >
               <option value="">Todos los roles</option>
               <option value="2">Vendedor</option>
-              <option value="3">Cliente</option>
               <option value="4">Proveedor</option>
-              <option value="5">Contacto</option>
             </select>
             <TextInput
               className="w-full sm:w-44"
@@ -401,28 +416,55 @@ const Personas = () => {
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">Nombre</th>
-                <th scope="col" className="px-6 py-3">Correo</th>
-                <th scope="col" className="px-6 py-3">Teléfono</th>
-                <th scope="col" className="px-6 py-3">Rol</th>
-                <th scope="col" className="px-6 py-3">Zona</th>
-                <th scope="col" className="px-6 py-3">Acciones</th>
+                <th scope="col" className="px-6 py-3">
+                  Nombre
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Correo
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Teléfono
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Rol
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Zona
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>
               {personas.length > 0 ? (
                 personas
-                  .filter(persona => 
-                    (!selectedRole || persona.roleId.toString() === selectedRole) &&
-                    (!searchTerm || 
-                      persona.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      persona.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      persona.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
+                  .filter(
+                    (persona) =>
+                      persona.roleId !== 3 &&
+                      persona.roleId !== 5 &&
+                      (!selectedRole ||
+                        persona.roleId.toString() === selectedRole) &&
+                      (!searchTerm ||
+                        persona.firstName
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        persona.lastName
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        persona.userEmail
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()))
                   )
                   .map((persona) => (
-                    <tr key={persona.userId} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <tr
+                      key={persona.userId}
+                      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                    >
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                      >
                         {`${persona.firstName} ${persona.lastName}`}
                       </th>
                       <td className="px-6 py-4">{persona.userEmail}</td>
@@ -432,13 +474,13 @@ const Personas = () => {
                           2: "Vendedor",
                           3: "Cliente",
                           4: "Proveedor",
-                          5: "Contacto"
+                          5: "Contacto",
                         }[persona.roleId] || "Desconocido"}
                       </td>
                       <td className="px-6 py-4">
                         {{
                           1: "Bogotá",
-                          2: "Tunja"
+                          2: "Tunja",
                         }[persona.locationId] || "Desconocido"}
                       </td>
                       <td className="px-6 py-4">
@@ -459,7 +501,7 @@ const Personas = () => {
                                 confirmButtonColor: "#3085d6",
                                 cancelButtonColor: "#d33",
                                 confirmButtonText: "Sí, eliminar",
-                                cancelButtonText: "Cancelar"
+                                cancelButtonText: "Cancelar",
                               }).then((result) => {
                                 if (result.isConfirmed) {
                                   handleDeleteUser(persona.userId);
@@ -470,6 +512,34 @@ const Personas = () => {
                           >
                             🗑️
                           </button>
+                          {persona.roleId === 3 && (
+                            <button
+                              onClick={() => {
+                                Swal.fire({
+                                  title: persona.firstName,
+                                  html: `
+                                  Informacion de contato:<br>
+                                ${persona.firstName}<br>
+                                ${persona.userPhone}<br>
+                                ${persona.userEmail}<br>
+                                Descripción del trabajo: ${persona.userJob}<br>
+                                Rol: ${persona.role}<br>
+                                Origen del contacto: ${
+                                  persona.userContactOrigin
+                                }<br>
+                                Ubicación: ${
+                                  persona.location === 1 ? "Bogotá" : "Tunja"
+                                }<br>
+                              `,
+                                  // icon: 'info',
+                                  confirmButtonText: "Entendido",
+                                  showCloseButton: true,
+                                });
+                              }}
+                            >
+                              ℹ️
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -493,135 +563,6 @@ const Personas = () => {
           <Modal.Body>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <TextInput
-                  name="firstName"
-                  label="Nombres"
-                  placeholder="Nombres"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
-                )}
-              </div>
-
-              <div>
-                <TextInput
-                  name="lastName"
-                  label="Apellidos"
-                  placeholder="Apellidos"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.lastName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
-                )}
-              </div>
-
-              <div>
-                <TextInput
-                  name="username"
-                  label="Nombre de usuario"
-                  placeholder="Username"
-                  value={formData.username}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.username && (
-                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
-                )}
-              </div>
-
-              <div>
-                <TextInput
-                  name="userPhone"
-                  label="Teléfono"
-                  placeholder="Número de teléfono"
-                  value={formData.userPhone}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.userPhone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>
-                )}
-              </div>
-
-              <div>
-                <Select
-                  name="documentId"
-                  label="Tipo de identificación"
-                  value={formData.documentId}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                >
-                  <option value="1">Cédula de ciudadanía</option>
-                  <option value="2">Tarjeta de identidad</option>
-                  <option value="3">Cédula de extranjería</option>
-                  <option value="4">Pasaporte</option>
-                </Select>
-              </div>
-
-              <div>
-                <TextInput
-                  name="documentNumber"
-                  label="Número de documento"
-                  placeholder="Número de documento"
-                  value={formData.documentNumber}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.documentNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.documentNumber}</p>
-                )}
-              </div>
-
-              <div className="col-span-2">
-                <TextInput
-                  name="userEmail"
-                  label="Correo electrónico"
-                  placeholder="Correo electrónico"
-                  value={formData.userEmail}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.userEmail && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>
-                )}
-              </div>
-
-              <div>
-                <TextInput
-                  name="password"
-                  type="password"
-                  label="Contraseña"
-                  placeholder="Contraseña"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-                )}
-              </div>
-
-              <div>
-                <TextInput
-                  name="passwordConfirmation"
-                  type="password"
-                  label="Confirmar contraseña"
-                  placeholder="Confirmar contraseña"
-                  value={formData.passwordConfirmation}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.passwordConfirmation && (
-                  <p className="text-red-500 text-xs mt-1">{errors.passwordConfirmation}</p>
-                )}
-              </div>
-
-              <div>
                 <Select
                   name="roleId"
                   label="Rol"
@@ -631,75 +572,245 @@ const Personas = () => {
                 >
                   <option value="">Seleccione un rol</option>
                   <option value="2">Vendedor</option>
-                  <option value="3">Cliente</option>
+
                   <option value="4">Proveedor</option>
-                  <option value="5">Contacto</option>
                 </Select>
               </div>
 
-              <div>
-                <TextInput
-                  name="userJob"
-                  label="Trabajo"
-                  placeholder="Trabajo del usuario"
-                  value={formData.userJob}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.userJob && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userJob}</p>
-                )}
-              </div>
+              {formData.roleId !== "3" && (
+                <div className="col-span-2 border p-4 rounded bg-gray-50  grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <TextInput
+                      name="firstName"
+                      label="Nombres"
+                      placeholder="Nombres"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.firstName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.firstName}
+                      </p>
+                    )}
+                  </div>
 
-              <div>
-                <TextInput
-                  name="userContactOrigin"
-                  label="Origen del contacto"
-                  placeholder="Origen del contacto"
-                  value={formData.userContactOrigin}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                />
-                {errors.userContactOrigin && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userContactOrigin}</p>
-                )}
-              </div>
+                  <div>
+                    <TextInput
+                      name="lastName"
+                      label="Apellidos"
+                      placeholder="Apellidos"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.lastName && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.lastName}
+                      </p>
+                    )}
+                  </div>
 
-              <div>
-                <Select
-                  name="locationId"
-                  label="Ubicación"
-                  value={formData.locationId}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                >
-                  <option value="1">Bogotá</option>
-                  <option value="2">Tunja</option>
-                </Select>
-              </div>
+                  <div>
+                    <TextInput
+                      name="username"
+                      label="Nombre de usuario"
+                      placeholder="Username"
+                      value={formData.username}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.username && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.username}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="userPhone"
+                      label="Teléfono"
+                      placeholder="Número de teléfono"
+                      value={formData.userPhone}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.userPhone && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.userPhone}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Select
+                      name="documentId"
+                      label="Tipo de identificación"
+                      value={formData.documentId}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    >
+                      <option value="1">Cédula de ciudadanía</option>
+                      <option value="2">Tarjeta de identidad</option>
+                      <option value="3">Cédula de extranjería</option>
+                      <option value="4">Pasaporte</option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="documentNumber"
+                      label="Número de documento"
+                      placeholder="Número de documento"
+                      value={formData.documentNumber}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.documentNumber && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.documentNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
+                    <TextInput
+                      name="userEmail"
+                      label="Correo electrónico"
+                      placeholder="Correo electrónico"
+                      value={formData.userEmail}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.userEmail && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.userEmail}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="password"
+                      type="password"
+                      label="Contraseña"
+                      placeholder="Contraseña"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.password && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.password}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="passwordConfirmation"
+                      type="password"
+                      label="Confirmar contraseña"
+                      placeholder="Confirmar contraseña"
+                      value={formData.passwordConfirmation}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.passwordConfirmation && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.passwordConfirmation}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="userJob"
+                      label="Trabajo"
+                      placeholder="Trabajo del usuario"
+                      value={formData.userJob}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.userJob && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.userJob}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <TextInput
+                      name="userContactOrigin"
+                      label="Origen del contacto"
+                      placeholder="Origen del contacto"
+                      value={formData.userContactOrigin}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    />
+                    {errors.userContactOrigin && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.userContactOrigin}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Select
+                      name="locationId"
+                      label="Ubicación"
+                      value={formData.locationId}
+                      onChange={(e) => handleInputChange(e)}
+                      className="w-full"
+                    >
+                      <option value="1">Bogotá</option>
+                      <option value="2">Tunja</option>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </div>
           </Modal.Body>
           <Modal.Footer>
             <div className="flex justify-end space-x-4">
-              <Button className="bg-red-500 hover:bg-red-800" 
-                onClick={closeModal} 
-                disabled={isLoading}>
+              <Button
+                className="bg-red-500 hover:bg-red-800"
+                onClick={closeModal}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 className={`inline-block py-2 px-6 rounded-l-xl rounded-t-xl ${
-                    isLoading 
-                      ? 'bg-[#9f7fff] cursor-not-allowed' 
-                      : 'bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200'
-                  } text-gray-50 font-bold leading-loose transition duration-200`}
+                  isLoading
+                    ? "bg-[#9f7fff] cursor-not-allowed"
+                    : "bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200"
+                } text-gray-50 font-bold leading-loose transition duration-200`}
                 onClick={handleNewUser}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <div className="flex items-center">
-                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Procesando...
                   </div>
@@ -725,7 +836,9 @@ const Personas = () => {
                   className="w-full"
                 />
                 {errors.firstName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
 
@@ -764,7 +877,9 @@ const Personas = () => {
                   className="w-full"
                 />
                 {errors.userPhone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userPhone}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.userPhone}
+                  </p>
                 )}
               </div>
 
@@ -786,12 +901,16 @@ const Personas = () => {
                 <TextInput
                   name="documentNumber"
                   label="Número de documento"
-                  placeholder={currentUser?.documentNumber || "Número de documento"}
+                  placeholder={
+                    currentUser?.documentNumber || "Número de documento"
+                  }
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
                 {errors.documentNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.documentNumber}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.documentNumber}
+                  </p>
                 )}
               </div>
 
@@ -812,12 +931,16 @@ const Personas = () => {
                 <TextInput
                   name="userContactOrigin"
                   label="Origen del contacto"
-                  placeholder={currentUser?.userContactOrigin || "Origen del contacto"}
+                  placeholder={
+                    currentUser?.userContactOrigin || "Origen del contacto"
+                  }
                   onChange={(e) => handleInputChange(e, true)}
                   className="w-full"
                 />
                 {errors.userContactOrigin && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userContactOrigin}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.userContactOrigin}
+                  </p>
                 )}
               </div>
 
@@ -830,7 +953,9 @@ const Personas = () => {
                   className="w-full"
                 />
                 {errors.userEmail && (
-                  <p className="text-red-500 text-xs mt-1">{errors.userEmail}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.userEmail}
+                  </p>
                 )}
               </div>
 
@@ -872,21 +997,41 @@ const Personas = () => {
               </Button>
               <Button
                 className={`inline-block py-2 px-6 rounded-l-xl rounded-t-xl ${
-                    isLoading 
-                      ? 'bg-[#9f7fff] cursor-not-allowed' 
-                      : 'bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200'
-                  } text-gray-50 font-bold leading-loose transition duration-200`}
-                onClick={() => {
-                  handleEditUser(actualId);
-                  closeModalEdit();
+                  isLoading
+                    ? "bg-[#9f7fff] cursor-not-allowed"
+                    : "bg-[#7747FF] hover:bg-white hover:text-[#7747FF] focus:text-[#7747FF] focus:bg-gray-200"
+                } text-gray-50 font-bold leading-loose transition duration-200`}
+                onClick={async () => {
+                  try {
+                    await handleEditUser(actualId);
+                    closeModalEdit();
+                  } catch (error) {
+                    console.error("Error in button click handler:", error);
+                  }
                 }}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <div className="flex items-center">
-                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-5 w-5 mr-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Procesando...
                   </div>
@@ -902,4 +1047,4 @@ const Personas = () => {
   );
 };
 
-export default Personas                
+export default Personas;

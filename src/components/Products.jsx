@@ -93,7 +93,7 @@ const Productos = () => {
     };
     try {
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/products/all",
+        "https://profismed-sgi-api.onrender.com/api/products/all",
         requestOptions
       );
       const data = await response.json();
@@ -148,7 +148,7 @@ const Productos = () => {
       };
 
       const response = await fetch(
-        "https://profismedsgi.onrender.com/api/products/create",
+        "https://profismed-sgi-api.onrender.com/api/products/create",
         requestOptions
       );
       const data = await response.json();
@@ -174,7 +174,7 @@ const Productos = () => {
       };
 
       const response = await fetch(
-        `https://profismedsgi.onrender.com/api/products/delete/${productId}`,
+        `https://profismed-sgi-api.onrender.com/api/products/delete/${productId}`,
         requestOptions
       );
       if (response.ok) {
@@ -240,7 +240,7 @@ const Productos = () => {
     };
 
     const response = await fetch(
-      `https://profismedsgi.onrender.com/api/products/update/${productId}`,
+      `https://profismed-sgi-api.onrender.com/api/products/update/${productId}`,
       requestOptions
     );
     const data = await response.json();
