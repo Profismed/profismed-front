@@ -153,23 +153,42 @@ const Sidebar = ({ isSidebarOpen, isMobileOpen, toggleMobileSidebar }) => {
                 </li>
               </>
             ) : (
-              <li>
-                <Link
-                  to="/Ventas"
-                  className={`flex items-center p-2 hover:bg-gray-700 ${
-                    isActive("/Ventas")
-                      ? "text-blue-500 border-r-4 border-blue-500"
-                      : "text-gray-400"
-                  }`}
-                >
-                  <HiCurrencyDollar className="w-6 h-6" />
-                  <span
-                    className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+              <>
+                <li>
+                  <Link
+                    to="/clients"
+                    className={`flex items-center p-2 hover:bg-gray-700 ${
+                      isActive("/clients")
+                        ? "text-blue-500 border-r-4 border-blue-500"
+                        : "text-gray-400"
+                    }`}
                   >
-                    Ventas
-                  </span>
-                </Link>
-              </li>
+                    <HiUser className="w-6 h-6" />
+                    <span
+                      className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                    >
+                      Clientes
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/Ventas"
+                    className={`flex items-center p-2 hover:bg-gray-700 ${
+                      isActive("/Ventas")
+                        ? "text-blue-500 border-r-4 border-blue-500"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    <HiCurrencyDollar className="w-6 h-6" />
+                    <span
+                      className={`${!isSidebarOpen && "hidden"} sm:inline ml-3`}
+                    >
+                      Ventas
+                    </span>
+                  </Link>
+                </li>
+              </>
             )}
             <li>
               <Link
