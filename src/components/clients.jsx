@@ -12,7 +12,7 @@ const Clients = () => {
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [actualId, setActualId] = useState(null);
-  
+
   // Form states and validation remain the same
   const [formData, setFormData] = useState({
     username: "",
@@ -23,7 +23,7 @@ const Clients = () => {
     contactJob: "",
     relationship: "",
   });
-  
+
   const [editFormData, setEditFormData] = useState({
     username: "",
     firstName: "",
@@ -33,7 +33,7 @@ const Clients = () => {
     contactJob: "",
     relationship: "",
   });
-  
+
   const [errors, setErrors] = useState({});
 
   // Validation rules
@@ -90,10 +90,10 @@ const Clients = () => {
         throw new Error("Network response was not ok");
       }
       const data = await response.json();
-      setContacto(prev => ({ ...prev, [id]: data[0] }));
+      setContacto((prev) => ({ ...prev, [id]: data[0] }));
       localStorage.setItem("contacto", JSON.stringify(contacto));
     } catch (error) {
-      console.error("Error fetching contact:", error);
+      // console.error("Error fetching contact:", error);
     }
   };
 
@@ -129,13 +129,11 @@ const Clients = () => {
 
       const error = validateField(field, data[field]);
       if (error) {
-        // console.log(error, "💀");
         newErrors[field] = error;
       }
     });
 
     setErrors(newErrors);
-    // console.log(newErrors, "🚀");
 
     return Object.keys(newErrors).length === 0;
   };
@@ -162,17 +160,14 @@ const Clients = () => {
   // Handle form submission for new user
   const handleNewUser = async () => {
     if (!validateForm(formData)) {
-      console.log(formData, "❤️");
-      console.log(errors, "💔");
       showToast("warning", "Por favor, corrija los errores en el formulario");
       return;
     }
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
     // Remove empty fields from form data
     try {
-      console.log(formData);
       const response = await fetch(
         "https://profismed-sgi-api.onrender.com/api/users/register-contact/",
         {
@@ -199,9 +194,9 @@ const Clients = () => {
       refreshCache();
     } catch (error) {
       showToast("error", error.message);
-      console.error("Error creating user:", error);
+      // console.error("Error creating user:", error);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -251,7 +246,7 @@ const Clients = () => {
       refreshCache();
     } catch (error) {
       showToast("error", error.message);
-      console.error("Error updating user:", error);
+      // console.error("Error updating user:", error);
     }
   };
 
@@ -269,10 +264,9 @@ const Clients = () => {
         requestOptions
       )
         .then((response) => response.text())
-        .then((result) => console.log(result))
         .catch((error) => console.error(error));
     } catch (error) {
-      console.error("An error occurred during user delete", error);
+      // console.error("An error occurred during user delete", error);
     }
   };
 
@@ -290,8 +284,8 @@ const Clients = () => {
   };
 
   // Fetch all users
-   const fetchPersonas = async () => {
-    setIsLoading(true);
+  const fetchPersonas = async () => {
+    // setIsLoading(true);
     try {
       const response = await fetch(
         "https://profismed-sgi-api.onrender.com/api/users/all",
@@ -304,18 +298,18 @@ const Clients = () => {
         setPersonas(data);
         localStorage.setItem("personas", JSON.stringify(data));
         // Fetch contact information for all clients (roleId === 3)
-        const clients = data.filter(person => person.roleId === 3);
-        clients.forEach(client => {
+        const clients = data.filter((person) => person.roleId === 3);
+        clients.forEach((client) => {
           if (!contacto[client.userId]) {
             fetchContact(client.userId);
           }
         });
       } else {
-        console.error("Invalid response format:", data);
+        // console.error("Invalid response format:", data);
         setPersonas([]);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      // console.error("Error fetching users:", error);
       setPersonas([]);
     }
   };
@@ -336,7 +330,7 @@ const Clients = () => {
   const refreshCache = () => {
     fetchPersonas();
     fetchContact();
-  }
+  };
 
   // Modal handlers
   const openModal = () => {
@@ -389,7 +383,10 @@ const Clients = () => {
   // Table row component to prevent unnecessary re-renders
   const TableRow = React.memo(({ persona, contactInfo, onEdit, onDelete }) => (
     <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-      <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+      <th
+        scope="row"
+        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+      >
         {persona.firstName}
       </th>
       <td className="px-6 py-4">{contactInfo?.contactEmail || "N/A"}</td>
@@ -436,7 +433,9 @@ const Clients = () => {
                     ${contactInfo?.contactName || "N/A"}<br/>
                     ${contactInfo?.contactPhone || "N/A"}<br/>
                     ${contactInfo?.contactEmail || "N/A"}<br/>
-                    Descripción del trabajo: ${contactInfo?.contactJob || "N/A"}<br/>
+                    Descripción del trabajo: ${
+                      contactInfo?.contactJob || "N/A"
+                    }<br/>
                     Relación del contacto: ${contactInfo?.relationship || "N/A"}
                   `,
                   confirmButtonText: "Entendido",
@@ -451,7 +450,7 @@ const Clients = () => {
       </td>
     </tr>
   ));
-  
+
   // Filter users for the table
   const filteredPersonas = personas.filter(
     (persona) =>
@@ -525,40 +524,40 @@ const Clients = () => {
               </tr>
             </thead>
             <tbody>
-            {personas.length > 0 ? (
-              filteredPersonas.map((persona) => (
-                <TableRow
-                  key={persona.userId}
-                  persona={persona}
-                  contactInfo={contacto[persona.userId]}
-                  onEdit={openModalEdit}
-                  onDelete={(id) => {
-                    Swal.fire({
-                      title: "¿Estás seguro?",
-                      text: "¡No podrás revertir esto!",
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonColor: "#3085d6",
-                      cancelButtonColor: "#d33",
-                      confirmButtonText: "Sí, eliminar",
-                      cancelButtonText: "Cancelar",
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        handleDeleteUser(id);
-                      }
-                    });
-                  }}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="px-6 py-4 text-center">
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                  </div>
-                </td>
-              </tr>
-            )} 
+              {personas.length > 0 ? (
+                filteredPersonas.map((persona) => (
+                  <TableRow
+                    key={persona.userId}
+                    persona={persona}
+                    contactInfo={contacto[persona.userId]}
+                    onEdit={openModalEdit}
+                    onDelete={(id) => {
+                      Swal.fire({
+                        title: "¿Estás seguro?",
+                        text: "¡No podrás revertir esto!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Sí, eliminar",
+                        cancelButtonText: "Cancelar",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          handleDeleteUser(id);
+                        }
+                      });
+                    }}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -620,7 +619,6 @@ const Clients = () => {
 
                 <p className="col-span-2"> Informacion del contacto</p>
 
-                {/* {console.log(formData)} */}
                 <div>
                   <TextInput
                     name="contactName"
