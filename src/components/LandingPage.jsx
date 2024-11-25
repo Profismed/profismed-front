@@ -197,6 +197,7 @@ const Personas = () => {
       closeModal();
       // Refresh users list
       fetchPersonas();
+      refreshCache();
     } catch (error) {
       showToast("error", error.message);
       console.error("Error creating user:", error);
@@ -247,6 +248,7 @@ const Personas = () => {
       showToast("success", "Usuario actualizado exitosamente");
       closeModalEdit();
       fetchPersonas();
+      refreshCache();
     } catch (error) {
       showToast("error", error.message);
       console.error("Error updating user:", error);
@@ -291,6 +293,7 @@ const Personas = () => {
 
   // Fetch users data
   const fetchPersonas = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(
         "https://profismed-sgi-api.onrender.com/api/users/all",
@@ -302,6 +305,8 @@ const Personas = () => {
 
       if (Array.isArray(data)) {
         setPersonas(data);
+        // Cache the data in localStorage
+        localStorage.setItem("personasCache", JSON.stringify(data));
       } else {
         console.error("Invalid response format:", data);
         setPersonas([]);
@@ -309,12 +314,23 @@ const Personas = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
       setPersonas([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPersonas();
+    const cachedPersonas = localStorage.getItem("personasCache");
+    if (cachedPersonas) {
+      setPersonas(JSON.parse(cachedPersonas));
+    } else {
+      fetchPersonas();
+    }
   }, []);
+
+  const refreshCache = () => {
+    fetchPersonas();
+  }
 
   // Modal handlers
   const openModal = () => {

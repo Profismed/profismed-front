@@ -194,6 +194,7 @@ const Clients = () => {
       closeModal();
       // Refresh users list
       fetchPersonas();
+      refreshCache();
     } catch (error) {
       showToast("error", error.message);
       console.error("Error creating user:", error);
@@ -244,6 +245,7 @@ const Clients = () => {
       showToast("success", "Usuario actualizado exitosamente");
       closeModalEdit();
       fetchPersonas();
+      refreshCache();
     } catch (error) {
       showToast("error", error.message);
       console.error("Error updating user:", error);
@@ -286,24 +288,16 @@ const Clients = () => {
 
   // Fetch all users
   const fetchPersonas = async () => {
+     setIsLoading(true);
     try {
-      const response = await fetch(
-        "https://profismed-sgi-api.onrender.com/api/users/all",
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch("https://profismed-sgi-api.onrender.com/api/users/all", {
+        credentials: "include",
+      });
       const data = await response.json();
-
       if (Array.isArray(data)) {
         setPersonas(data);
-        // Fetch contact information for all clients (roleId === 3)
-        const clients = data.filter(person => person.roleId === 3);
-        clients.forEach(client => {
-          if (!contacto[client.userId]) {
-            fetchContact(client.userId);
-          }
-        });
+        // Cache the data in localStorage
+        localStorage.setItem("clientsCache", JSON.stringify(data));
       } else {
         console.error("Invalid response format:", data);
         setPersonas([]);
@@ -311,12 +305,23 @@ const Clients = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
       setPersonas([]);
-    }
+    } finally {
+      setIsLoading(false);
+    }  
   };
 
   useEffect(() => {
-    fetchPersonas();
+    const cachedPersonas = localStorage.getItem("clientsCache");
+    if (cachedPersonas) {
+      setPersonas(JSON.parse(cachedPersonas));
+    } else {
+      fetchPersonas();
+    }
   }, []);
+
+  const refreshCache = () => {
+    fetchPersonas();
+  }
 
   // Modal handlers
   const openModal = () => {
