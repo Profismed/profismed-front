@@ -432,6 +432,8 @@ const Reportes = () => {
             Persona que más ha comprado
           </h3>
           {topBuyers && topBuyers.length > 0 ? (
+            // console.log(topBuyers),
+            
             <div className="text-gray-600">
               <p>
                 <span className="font-bold text-gray-900">
@@ -454,7 +456,7 @@ const Reportes = () => {
                   {topBuyers[0].products_bought}
                 </span>
               </p>
-              <p>
+              {/* <p>
                 Correo:{" "}
                 <span className="text-blue-500">
                   {topBuyers[0].contact_email}
@@ -462,7 +464,7 @@ const Reportes = () => {
               </p>
               <p>
                 Teléfono: <span>{topBuyers[0].contact_phone}</span>
-              </p>
+              </p> */}
             </div>
           ) : (
             <p className="text-gray-500">Cargando datos del comprador...</p>
