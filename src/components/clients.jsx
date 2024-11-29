@@ -222,7 +222,7 @@ const Clients = () => {
     // Send the request to update the user
     try {
       const response = await fetch(
-        `https://profismed-sgi-api.onrender.com/api/users/update/${id}`,
+        `https://profismed-sgi-api.onrender.com/api/users/update-client/${id}`,
         {
           method: "PUT",
           body: JSON.stringify(filteredData),
