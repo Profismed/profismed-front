@@ -36,7 +36,7 @@ const Reportes = () => {
   });
 
   // Helper function to handle cached data
-  const getCachedData = (key, expirationMinutes = 30) => {
+  const getCachedData = (key, expirationMinutes = 0.5) => {
     const cached = localStorage.getItem(key);
     if (cached) {
       const { data, timestamp } = JSON.parse(cached);
@@ -96,18 +96,28 @@ const Reportes = () => {
   const updateChart = (data, chartSetter) => {
     switch(chartSetter) {
       case setTopBuyersChart:
+        console.log(data);
+        
         chartSetter({
-          series: [{
+          series: [
+            {
             name: "Total Comprado en unidades",
             data: data.map(buyer => 
               buyer.products_bought.split(",").map(p => p.trim()).length
             ),
-          }],
+          },
+            {
+            name: "Total Comprado en valor",
+            data: data.map(buyer => 
+              buyer.total_purchased.toFixed(2)
+            ),
+          },
+        ],
           options: {
             chart: { type: "bar", height: 350 },
             xaxis: {
               categories: data.map(buyer => 
-                `${buyer.contact_first_name} ${buyer.contact_last_name}`
+                `${buyer.contact_first_name} `
               ),
             },
             title: {
@@ -169,11 +179,18 @@ const Reportes = () => {
         break;
 
       case setTopSellersChart:
+        console.log(data,"❤️");
+        
         chartSetter({
           series: [{
             name: "Total Vendido en unidades",
             data: data.map(seller => seller.total_sales),
-          }],
+          },
+          {
+            name: "Total Vendido en dinero",
+            data: data.map(seller => seller.total_sales_amount.toFixed(2)),
+          },
+        ],
           options: {
             chart: { type: "bar", height: 350 },
             xaxis: {
@@ -311,7 +328,7 @@ const Reportes = () => {
             </h3>
             {topSalesZone && topSalesZone.length > 0 ? (
               <p className="text-gray-600">
-                La zona con menos ventas es{" "}
+                La zona con más ventas es{" "}
                 <span className="font-bold text-gray-900">
                   {topSalesZone[0].zone_name}
                 </span>{" "}
@@ -321,7 +338,7 @@ const Reportes = () => {
                 </span>
                 productos alcanzando un valor total de{" "}
                 <span className="font-bold text-gray-900">
-                  ${topSalesZone[0].total_sales}
+                  ${topSalesZone[0].total_sales.toFixed(2)}
                 </span>
                 .
               </p>
@@ -472,6 +489,7 @@ const Reportes = () => {
         </div>
       </div>
 
+      {/* Gráfico de ventas mensuales */}
       <div className="mb-6">
         <div className="bg-white shadow-lg rounded-lg p-4">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">
