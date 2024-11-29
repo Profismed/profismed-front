@@ -221,6 +221,8 @@ const Clients = () => {
 
     // Send the request to update the user
     try {
+      // console.log("filteredData", filteredData);
+      
       const response = await fetch(
         `https://profismed-sgi-api.onrender.com/api/users/update-client/${id}`,
         {
@@ -246,7 +248,7 @@ const Clients = () => {
       refreshCache();
     } catch (error) {
       showToast("error", error.message);
-      // console.error("Error updating user:", error);
+      // console.log("Error updating user:", error);
     }
   };
 
@@ -399,12 +401,12 @@ const Clients = () => {
           5: "Contacto",
         }[persona.roleId] || "Desconocido"}
       </td>
-      <td className="px-6 py-4">
+      {/* <td className="px-6 py-4">
         {{
           1: "Bogotá",
           2: "Tunja",
         }[persona.locationId] || "Desconocido"}
-      </td>
+      </td> */}
       <td className="px-6 py-4">
         <div className="flex space-x-2">
           <button
@@ -515,9 +517,9 @@ const Clients = () => {
                 <th scope="col" className="px-6 py-3">
                   Rol
                 </th>
-                <th scope="col" className="px-6 py-3">
+                {/* <th scope="col" className="px-6 py-3">
                   Zona
-                </th>
+                </th> */}
                 <th scope="col" className="px-6 py-3">
                   Acciones
                 </th>
@@ -567,21 +569,7 @@ const Clients = () => {
           <Modal.Header>Añadir cliente</Modal.Header>
           <Modal.Body>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <div>
-                <Select
-                  name="roleId"
-                  label="Rol"
-                  value={formData.roleId}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                >
-                  <option value="">Seleccione un rol</option>
-                  <option value="2">Vendedor</option>
-                  <option value="3">Cliente</option>
-                  <option value="4">Proveedor</option>
-                  <option value="5">Contacto</option>
-                </Select>
-              </div> */}
+             
 
               {/* Sección de Contacto */}
 
@@ -683,8 +671,8 @@ const Clients = () => {
                     name="relationship"
                     label="Origen del contacto"
                     placeholder="Relacion del trabajo"
-                    value={formData.relationship}
-                    onChange={(e) => handleInputChange(e)}
+                    value={formData.relationship || ""} 
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.relationship && (
@@ -694,22 +682,7 @@ const Clients = () => {
                   )}
                 </div>
 
-                {/* <div>
-                    <Select
-                      name="locationId"
-                      label="Ubicación"
-                      value={formData.locationId}
-                      onChange={(e) => handleInputChange(e)}
-                      className="w-full"
-                    >
-                      <option value="1">Bogotá</option>
-                      <option value="2">Tunja</option>
-                    </Select>
-                  </div> */}
-
-                {/* <button className="bg-blue-400 hover:bg-blue-300 rounded-md">
-                    Confirmar información
-                  </button> */}
+               
               </div>
             </div>
           </Modal.Body>
@@ -768,32 +741,17 @@ const Clients = () => {
           <Modal.Header>Editar Cliente</Modal.Header>
           <Modal.Body>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <div>
-                <Select
-                  name="roleId"
-                  label="Rol"
-                  value={formData.roleId}
-                  onChange={(e) => handleInputChange(e)}
-                  className="w-full"
-                >
-                  <option value="">Seleccione un rol</option>
-                  <option value="2">Vendedor</option>
-                  <option value="3">Cliente</option>
-                  <option value="4">Proveedor</option>
-                  <option value="5">Contacto</option>
-                </Select>
-              </div> */}
 
               {/* Sección de Contacto */}
 
               <div className="col-span-2 border p-4 rounded bg-gray-50  grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div>
                   <TextInput
                     name="firstName"
-                    label="Nombres"
+                    label="Nombres del cliente"
                     placeholder="Nombre del cliente"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.firstName}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.firstName && (
@@ -808,8 +766,8 @@ const Clients = () => {
                     name="username"
                     label="Nombre de usuario"
                     placeholder="Username"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.username}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.username && (
@@ -823,18 +781,13 @@ const Clients = () => {
 
                 <div>
                   <TextInput
-                    name="firstNameContact"
-                    label="Nombres"
-                    placeholder="Nombre del contacto"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange(e)}
+                    name="contactName"
+                    label="NameContact"
+                    placeholder="nombre del contacto"
+                    value={editFormData.contactName || ""}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
-                  {errors.firstName && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.firstName}
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -842,8 +795,8 @@ const Clients = () => {
                     name="contactPhone"
                     label="Teléfono"
                     placeholder="Número de teléfono"
-                    value={formData.contactPhone}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.contactPhone}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.contactPhone && (
@@ -858,8 +811,8 @@ const Clients = () => {
                     name="contactEmail"
                     label="Correo electrónico"
                     placeholder="Correo electrónico"
-                    value={formData.contactEmail}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.contactEmail}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.contactEmail && (
@@ -874,8 +827,8 @@ const Clients = () => {
                     name="contactJob"
                     label="Trabajo"
                     placeholder="Trabajo del contacto"
-                    value={formData.contactJob}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.contactJob}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.contactJob && (
@@ -890,8 +843,8 @@ const Clients = () => {
                     name="relationship"
                     label="Origen del contacto"
                     placeholder="Relacion del trabajo"
-                    value={formData.relationship}
-                    onChange={(e) => handleInputChange(e)}
+                    value={editFormData.relationship}
+                    onChange={(e) => handleInputChange(e, true)}
                     className="w-full"
                   />
                   {errors.relationship && (

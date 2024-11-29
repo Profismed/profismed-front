@@ -96,7 +96,7 @@ const Reportes = () => {
   const updateChart = (data, chartSetter) => {
     switch(chartSetter) {
       case setTopBuyersChart:
-        console.log(data);
+        // console.log(data);
         
         chartSetter({
           series: [
@@ -179,7 +179,7 @@ const Reportes = () => {
         break;
 
       case setTopSellersChart:
-        console.log(data,"❤️");
+        // console.log(data,"❤️");
         
         chartSetter({
           series: [{
